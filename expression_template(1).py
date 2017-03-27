@@ -56,6 +56,15 @@ class Expression():
     # this allows us to perform 'arithmetic' with expressions, and obtain another expression
     def __add__(self, other):
         return AddNode(self, other)
+    
+    def __sub__(self,other):
+        return SubNode(self,other)
+    
+    def __mul__(self,other):
+        return MulNode(self,other)
+    
+    def __div__(self,other):
+        return DivNode(self,other)
         
     # TODO: other overloads, such as __sub__, __mul__, etc.
     
@@ -67,11 +76,11 @@ class Expression():
         # stack used by the Shunting-Yard algorithm
         stack = []
         # output of the algorithm: a list representing the formula in RPN
-        # this will contain Constant's and '+'s
+        # this will contain Constant's and operators
         output = []
         
         # list of operators
-        oplist = ['+']
+        oplist = ['+','-','*','/']
         
         for token in tokens:
             if isnumber(token):
@@ -169,6 +178,24 @@ class AddNode(BinaryNode):
     """Represents the addition operator"""
     def __init__(self, lhs, rhs):
         super(AddNode, self).__init__(lhs, rhs, '+')
+
+class SubNode(BinaryNode):
+    """Represents the subtraction operator"""
+    def __init__(self,lhs,rhs):
+        super(SubNode,self).__init__(lhs,rhs,'-')
+
+class MulNode(BinaryNode):
+    """Represents the multiplication operator"""
+    def __init__(self,lhs,rhs):
+        super(MulNode,self).__init__(lhs,rhs,'*')
+
+class DivNode(BinaryNode):
+    """Represents the division operator"""
+    def __init__(self,lhs,rhs):
+        super(DivNode,self).__init__(lhs,rhs,'/')
+        
+ 
+
         
 # TODO: add more subclasses of Expression to represent operators, variables, functions, etc.
 
