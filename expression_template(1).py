@@ -72,19 +72,24 @@ class Expression():
     # TODO: other overloads, such as __sub__, __mul__, etc.
     
     # basic Shunting-yard algorithm
-    def fromString(string):
+    def fromString(string): # van een string (infix) naar expressieboom
         # split into tokens
         tokens = tokenize(string)
-        
+
         # stack used by the Shunting-Yard algorithm
         stack = []
         # output of the algorithm: a list representing the formula in RPN
         # this will contain Constant's and '+'s
         output = []
-        
+
+        ## rang van operators
+        first_op_list = ['**']
+        second_op_list = ['*','/']
+        trird_op_list = ['+','-']
+        haakje_list = ['(',')']
         # list of operators
-        oplist = ['+']
-        
+        oplist = ['+', '-']+second_op_list+first_op_list+['(',')']
+
         for token in tokens:
             if isnumber(token):
                 # numbers go directly to the output
@@ -95,8 +100,18 @@ class Expression():
             elif token in oplist:
                 # pop operators from the stack to the output until the top is no longer an operator
                 while True:
+                    if token in second_op_list and stack[-1] in trird_op_list:
+                        break ## dan moet hij op de stack
+                    if token in first_op_list and stack[-1] in second_op_list:
+                        break
+                    if token in first_op_list and stack[-1] in third_op_list:
+                        break ##alle variaties van lagere rang
+                    if token in third_op_list and stack[-1] in third_op_list:
+                        break ## machtsverheven in rechtsacciosatief, dus moeten achter elkaar op de stack
+
                     # TODO: when there are more operators, the rules are more complicated
                     # look up the shunting yard-algorithm
+                    ## werkt nu voor plus en min, allecombinaties
                     if len(stack) == 0 or stack[-1] not in oplist:
                         break
                     output.append(stack.pop())
@@ -115,18 +130,18 @@ class Expression():
             else:
                 # unknown token
                 raise ValueError('Unknown token: %s' % token)
-            
+
         # pop any tokens still on the stack to the output
         while len(stack) > 0:
             output.append(stack.pop())
-        
+
         # convert RPN to an actual expression tree
         for t in output:
             if t in oplist:
                 # let eval and operator overloading take care of figuring out what to do
                 y = stack.pop()
                 x = stack.pop()
-                stack.append(eval('x %s y' % t))
+                stack.append(eval('x %s y' % t)) ## combineer node met x en node met y met ouder node operator
             else:
                 # a constant, push it to the stack
                 stack.append(t)
