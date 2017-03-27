@@ -80,8 +80,13 @@ class Expression():
         # this will contain Constant's and '+'s
         output = []
 
+        ## rang van operators
+        first_op_list = ['**']
+        second_op_list = ['*','/']
+        trird_op_list = ['+','-']
+        haakje_list = ['(',')']
         # list of operators
-        oplist = ['+']
+        oplist = ['+', '-']+second_op_list+first_op_list+['(',')']
 
         for token in tokens:
             if isnumber(token):
@@ -93,8 +98,18 @@ class Expression():
             elif token in oplist:
                 # pop operators from the stack to the output until the top is no longer an operator
                 while True:
+                    if token in second_op_list and stack[-1] in trird_op_list:
+                        break ## dan moet hij op de stack
+                    if token in first_op_list and stack[-1] in second_op_list:
+                        break
+                    if token in first_op_list and stack[-1] in third_op_list:
+                        break ##alle variaties van lagere rang
+                    if token in third_op_list and stack[-1] in third_op_list:
+                        break ## machtsverheven in rechtsacciosatief, dus moeten achter elkaar op de stack
+
                     # TODO: when there are more operators, the rules are more complicated
                     # look up the shunting yard-algorithm
+                    ## werkt nu voor plus en min, allecombinaties
                     if len(stack) == 0 or stack[-1] not in oplist:
                         break
                     output.append(stack.pop())
