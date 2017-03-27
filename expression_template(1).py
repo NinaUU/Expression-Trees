@@ -5,7 +5,7 @@ import math
 # output will not contain spaces
 def tokenize(string):
     splitchars = list("+-*/(),")
-    
+
     # surround any splitchar by spaces
     tokenstring = []
     for c in string:
@@ -16,7 +16,7 @@ def tokenize(string):
     tokenstring = ''.join(tokenstring)
     #split on spaces - this gives us our tokens
     tokens = tokenstring.split()
-    
+
     #special casing for **:
     ans = []
     for t in tokens:
@@ -25,7 +25,7 @@ def tokenize(string):
         else:
             ans.append(t)
     return ans
-    
+
 # check if a string represents a numeric value
 def isnumber(string):
     try:
@@ -34,7 +34,7 @@ def isnumber(string):
     except ValueError:
         return False
 
-# check if a string represents an integer value        
+# check if a string represents an integer value
 def isint(string):
     try:
         int(string)
@@ -44,35 +44,45 @@ def isint(string):
 
 class Expression():
     """A mathematical expression, represented as an expression tree"""
-    
+
     """
     Any concrete subclass of Expression should have these methods:
      - __str__(): return a string representation of the Expression.
      - __eq__(other): tree-equality, check if other represents the same expression tree.
     """
     # TODO: when adding new methods that should be supported by all subclasses, add them to this list
-    
+
     # operator overloading:
     # this allows us to perform 'arithmetic' with expressions, and obtain another expression
+
     def __add__(self, other):
         return AddNode(self, other)
-        
+
+    def __sub__(self,other):
+        return SubNode(self,other)
+
+    def __mul__(self,other):
+        return MulNote(self,other)
+
+    def __div__(self,other):
+        return DivNote(self,other)
+
     # TODO: other overloads, such as __sub__, __mul__, etc.
-    
+
     # basic Shunting-yard algorithm
-    def fromString(string):
+    def fromString(string): # van een string (infix) naar expressieboom
         # split into tokens
         tokens = tokenize(string)
-        
+
         # stack used by the Shunting-Yard algorithm
         stack = []
         # output of the algorithm: a list representing the formula in RPN
         # this will contain Constant's and '+'s
         output = []
-        
+
         # list of operators
         oplist = ['+']
-        
+
         for token in tokens:
             if isnumber(token):
                 # numbers go directly to the output
@@ -103,73 +113,74 @@ class Expression():
             else:
                 # unknown token
                 raise ValueError('Unknown token: %s' % token)
-            
+
         # pop any tokens still on the stack to the output
         while len(stack) > 0:
             output.append(stack.pop())
-        
+
         # convert RPN to an actual expression tree
         for t in output:
             if t in oplist:
                 # let eval and operator overloading take care of figuring out what to do
                 y = stack.pop()
                 x = stack.pop()
-                stack.append(eval('x %s y' % t))
+                stack.append(eval('x %s y' % t)) ## combineer node met x en node met y met ouder node operator
             else:
                 # a constant, push it to the stack
                 stack.append(t)
         # the resulting expression tree is what's left on the stack
         return stack[0]
-    
+
 class Constant(Expression):
     """Represents a constant value"""
     def __init__(self, value):
         self.value = value
-        
+
     def __eq__(self, other):
         if isinstance(other, Constant):
             return self.value == other.value
         else:
             return False
-        
+
     def __str__(self):
         return str(self.value)
-        
+
     # allow conversion to numerical values
     def __int__(self):
         return int(self.value)
-        
+
     def __float__(self):
         return float(self.value)
-        
+
 class BinaryNode(Expression):
     """A node in the expression tree representing a binary operator."""
-    
+
     def __init__(self, lhs, rhs, op_symbol):
         self.lhs = lhs
         self.rhs = rhs
         self.op_symbol = op_symbol
-    
+
     # TODO: what other properties could you need? Precedence, associativity, identity, etc.
-            
+
     def __eq__(self, other):
         if type(self) == type(other):
             return self.lhs == other.lhs and self.rhs == other.rhs
         else:
             return False
-            
+
     def __str__(self):
         lstring = str(self.lhs)
         rstring = str(self.rhs)
-        
+
         # TODO: do we always need parantheses?
         return "(%s %s %s)" % (lstring, self.op_symbol, rstring)
-        
+
 class AddNode(BinaryNode):
     """Represents the addition operator"""
     def __init__(self, lhs, rhs):
         super(AddNode, self).__init__(lhs, rhs, '+')
-        
+
 # TODO: add more subclasses of Expression to represent operators, variables, functions, etc.
+
 
 #test
