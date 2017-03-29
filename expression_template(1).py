@@ -63,9 +63,11 @@ class Expression():
     def __mul__(self,other):
         return MulNode(self,other)
     
-    def __div__(self,other):
+    def __truediv__(self,other):
         return DivNode(self,other)
-        
+    
+    def __pow__(self,other):
+        return PowNode(self,other)   
     # TODO: other overloads, such as __sub__, __mul__, etc.
     
     # basic Shunting-yard algorithm
@@ -130,16 +132,26 @@ class Expression():
         # the resulting expression tree is what's left on the stack
         return stack[0]
     
+    def __eq__(self,other):
+        op_commutative=['+','*'] # list of commutative operators
+        n_op_commutative=['-','/','**'] # list of operators that are not commutative
+        if isinstance(self,BinaryNode) and isinstance(other,BinaryNode): # recursive code since there are more nodes below that also need to be compared
+            if self.op_symbol!=other.op_symbol:
+                return False
+            # from here on we know self.op_symbol==other.op_symbol
+            if self.op_symbol in n_op_commutative: 
+                return self.lhs.__eq__(other.lhs) and self.rhs.__eq__(other.rhs)
+            elif self.op_symbol in op_commutative: 
+                return (self.lhs.__eq__(other.lhs) and self.rhs.__eq__(other.rhs)) or (self.lhs.__eq__(other.rhs) and self.rhs.__eq__(other.lhs))
+        elif isinstance(self,Constant) and isinstance(other,Constant): # only one execution since Constants only occur in leaves
+            return self.value==other.value
+        else: # if the types are not the same, the nodes cannot be compared
+            return False
+
 class Constant(Expression):
     """Represents a constant value"""
     def __init__(self, value):
         self.value = value
-        
-    def __eq__(self, other):
-        if isinstance(other, Constant):
-            return self.value == other.value
-        else:
-            return False
         
     def __str__(self):
         return str(self.value)
@@ -160,12 +172,6 @@ class BinaryNode(Expression):
         self.op_symbol = op_symbol
     
     # TODO: what other properties could you need? Precedence, associativity, identity, etc.
-            
-    def __eq__(self, other):
-        if type(self) == type(other):
-            return self.lhs == other.lhs and self.rhs == other.rhs
-        else:
-            return False
             
     def __str__(self):
         lstring = str(self.lhs)
@@ -194,7 +200,10 @@ class DivNode(BinaryNode):
     def __init__(self,lhs,rhs):
         super(DivNode,self).__init__(lhs,rhs,'/')
         
- 
+class PowNode(BinaryNode):
+    """Represents the power operator"""
+    def __init__(self,lhs,rhs):
+        super(PowNode,self).__init__(lhs,rhs,'**')     
 
         
 # TODO: add more subclasses of Expression to represent operators, variables, functions, etc.
