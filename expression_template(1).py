@@ -100,6 +100,10 @@ class Expression():
             elif token in oplist:
                 # pop operators from the stack to the output until the top is no longer an operator
                 while True:
+                    if len(stack) == 0 or stack[-1] not in oplist:
+                        break
+                    output.append(stack.pop())
+                    
                     if token in second_op_list and stack[-1] in trird_op_list:
                         break ## dan moet hij op de stack
                     if token in first_op_list and stack[-1] in second_op_list:
@@ -110,11 +114,7 @@ class Expression():
                         break ## machtsverheven in rechtsacciosatief, dus moeten achter elkaar op de stack
 
                     # TODO: when there are more operators, the rules are more complicated
-                    # look up the shunting yard-algorithm
                     ## werkt nu voor plus en min, allecombinaties
-                    if len(stack) == 0 or stack[-1] not in oplist:
-                        break
-                    output.append(stack.pop())
                 # push the new operator onto the stack
                 stack.append(token)
             elif token == '(':
@@ -178,6 +178,7 @@ class Variables(Expression):
 
     def __str__(self):
         return str(self.value)
+    
     def __eq__(self,other):
         if isinstance(other, Variables):
             return self.value == other.value
