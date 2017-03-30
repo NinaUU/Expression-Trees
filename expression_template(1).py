@@ -178,7 +178,12 @@ class Variables(Expression):
 
     def __str__(self):
         return str(self.value)
-
+    def __eq__(self,other):
+        if isinstance(other, Variables):
+            return self.value == other.value
+        else:
+            return False
+        
 class BinaryNode(Expression):
     """A node in the expression tree representing a binary operator."""
     
