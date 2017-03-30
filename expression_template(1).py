@@ -127,6 +127,8 @@ class Expression():
                 # pop the left paranthesis from the stack (but not to the output)
                 stack.pop()
             # TODO: do we need more kinds of tokens?
+            elif isinstance(token, str):
+                output.append(Variables(token))            
             else:
                 # unknown token
                 raise ValueError('Unknown token: %s' % token)
