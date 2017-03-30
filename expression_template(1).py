@@ -127,6 +127,8 @@ class Expression():
                 # pop the left paranthesis from the stack (but not to the output)
                 stack.pop()
             # TODO: do we need more kinds of tokens?
+            elif isinstance(token, str):
+                output.append(Variables(token))            
             else:
                 # unknown token
                 raise ValueError('Unknown token: %s' % token)
@@ -168,6 +170,19 @@ class Constant(Expression):
         
     def __float__(self):
         return float(self.value)
+        
+class Variables(Expression):
+    """Reprecenteerd een variabele"""
+    def __init__(self,value):
+        self.value = value
+
+    def __str__(self):
+        return str(self.value)
+    def __eq__(self,other):
+        if isinstance(other, Variables):
+            return self.value == other.value
+        else:
+            return False
         
 class BinaryNode(Expression):
     """A node in the expression tree representing a binary operator."""
