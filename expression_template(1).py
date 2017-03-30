@@ -169,6 +169,14 @@ class Constant(Expression):
     def __float__(self):
         return float(self.value)
         
+class Variables(Expression):
+    """Reprecenteerd een variabele"""
+    def __init__(self,value):
+        self.value = value
+
+    def __str__(self):
+        return str(self.value)
+
 class BinaryNode(Expression):
     """A node in the expression tree representing a binary operator."""
     
