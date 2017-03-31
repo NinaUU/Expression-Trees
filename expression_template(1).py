@@ -25,6 +25,19 @@ def tokenize(string):
             ans[-1] = '**'
         else:
             ans.append(t)
+
+            # special casing for negative numbers:
+    if ans[0] == '-':
+        a = ans.pop(0)
+        b = ans.pop(
+            0)  # 0th element was previously 1st element but since element 0 has been removed, element 1 has become the new 0th element
+        ans = [str(a) + str(b)] + ans
+    for i in range(1, len(ans) - 1):
+        if ans[i] == '-' and ans[i - 1] in splitchars:
+            a = ans.pop(i)
+            b = ans.pop(i)  # ith element was previously (i+1)th element
+            ans.insert(i, str(a) + str(b))
+
     return ans
 
 
@@ -45,6 +58,7 @@ def isint(string):
     except ValueError:
         return False
 
+
 # returns the number of priority of an operator
 # the lower the priority, the higher the number
 def op_nummer(op):
@@ -55,15 +69,21 @@ def op_nummer(op):
     if op == '+' or op == '-':
         return 3
 
-# returns priority number of the operator in the string with lowest priority
-# the lower the priority, the higher the number
+
+#geeft de prioriteit terug van de operator met laagste priorieit
+# (dus hoogste getal) die nog niet ingesloten in door haakjes
 def zoek_op(st):
+    open = 0
     result = 1
     for s in st:
-        if (s == '*' or s == '/') and result != 3:
+        if (s == '*' or s == '/') and (result != 3) and (open == 0):
             result = 2
-        if s == '+' or s == '-':
+        if (s == '+' or s == '-') and open == 0:
             result = 3
+        if s == '(':
+            open += 1
+        if s == ')':
+            open -= 1
     return result
 
 
@@ -111,9 +131,10 @@ class Expression():
         ## rang van operators
         first_op_list = ['**']
         second_op_list = ['*', '/']
-        third_op_list = ['+', '-']
+        third_op_list = ['-']
+        fourth_op_list = ['+']
         # list of operators
-        oplist = ['+', '-'] + second_op_list + first_op_list
+        oplist = third_op_list + second_op_list + first_op_list + fourth_op_list
 
         for token in tokens:
             if isnumber(token):
@@ -127,19 +148,14 @@ class Expression():
                 while True:
                     if len(stack) == 0 or stack[-1] not in oplist:
                         break
-                    if token in second_op_list and stack[-1] in third_op_list:
+                    if token in second_op_list and stack[-1] in third_op_list + fourth_op_list:
                         break  ## dan moet hij op de stack
-                    if token in first_op_list and stack[-1] in second_op_list:
+                    if token in first_op_list and stack[-1] in second_op_list + third_op_list + fourth_op_list:
                         break
-                    if token in first_op_list and stack[-1] in third_op_list:
-                        break  ##alle variaties van lagere rang
-                    if token in third_op_list and stack[-1] in third_op_list:
-                        break  ## machtsverheven in rechtsacciosatief, dus moeten achter elkaar op de stack
-
-                    # TODO: when there are more operators, the rules are more complicated
-                    # look up the shunting yard-algorithm
-                    ## werkt nu voor plus en min, allecombinaties
-
+                    if token in third_op_list and stack[-1] in fourth_op_list:
+                        break
+                    if token in fourth_op_list and stack[-1] in fourth_op_list:
+                        break
                     output.append(stack.pop())
                 # push the new operator onto the stack
                 stack.append(token)
@@ -153,6 +169,8 @@ class Expression():
                 # pop the left paranthesis from the stack (but not to the output)
                 stack.pop()
             # TODO: do we need more kinds of tokens?
+            elif isinstance(token, str):
+                output.append(Variables(token))
             else:
                 # unknown token
                 raise ValueError('Unknown token: %s' % token)
@@ -174,18 +192,45 @@ class Expression():
         # the resulting expression tree is what's left on the stack
         return stack[0]
 
+    def __eq__(self, other):
+        op_commutative = ['+', '*']  # list of commutative operators
+        n_op_commutative = ['-', '/', '**']  # list of operators that are not commutative
+        if isinstance(self, BinaryNode) and isinstance(other,
+                                                       BinaryNode):  # recursive code since there are more nodes below that also need to be compared
+            if self.op_symbol != other.op_symbol:
+                return False
+            # from here on we know self.op_symbol==other.op_symbol
+            if self.op_symbol in n_op_commutative:
+                return self.lhs.__eq__(other.lhs) and self.rhs.__eq__(other.rhs)
+            elif self.op_symbol in op_commutative:
+                return (self.lhs.__eq__(other.lhs) and self.rhs.__eq__(other.rhs)) or (
+                self.lhs.__eq__(other.rhs) and self.rhs.__eq__(other.lhs))
+        elif isinstance(self, Constant) and isinstance(other,
+                                                       Constant):  # only one execution since Constants only occur in leaves
+            return self.value == other.value
+        else:  # if the types are not the same, the nodes cannot be compared
+            return False
+
+    def evaluate(self, dictionary={}):
+        """ A function that calculates the numerical value of an expression.
+            dictionary = a dictionary assigning values to the variables """
+        if isinstance(self.lhs, BinaryNode) or isinstance(self.rhs,
+                                                          BinaryNode):  # recursive loop until no more operators are encountered
+            if isinstance(self.lhs, BinaryNode) and isinstance(self.rhs, BinaryNode):
+                return eval(str(self.lhs.evaluate(dictionary)) + self.op_symbol + str(self.rhs.evaluate(dictionary)))
+            if isinstance(self.lhs, BinaryNode):
+                return eval(str(self.lhs.evaluate(dictionary)) + self.op_symbol + str(self.rhs.value))
+            if isinstance(self.rhs, BinaryNode):
+                return eval(str(self.lhs.value) + self.op_symbol + str(self.rhs.evaluate(dictionary)))
+        # no more operators encountered means that the next nodes are constants or variables or a combination
+        return eval(str(self.lhs.value) + self.op_symbol + str(self.rhs.value), dictionary)
+
 
 class Constant(Expression):
     """Represents a constant value"""
 
     def __init__(self, value):
         self.value = value
-
-    def __eq__(self, other):
-        if isinstance(other, Constant):
-            return self.value == other.value
-        else:
-            return False
 
     def __str__(self):
         return str(self.value)
@@ -198,6 +243,22 @@ class Constant(Expression):
         return float(self.value)
 
 
+class Variables(Expression):
+    """Reprecenteerd een variabele"""
+
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return str(self.value)
+
+    def __eq__(self, other):
+        if isinstance(other, Variables):
+            return self.value == other.value
+        else:
+            return False
+
+
 class BinaryNode(Expression):
     """A node in the expression tree representing a binary operator."""
 
@@ -207,13 +268,6 @@ class BinaryNode(Expression):
         self.op_symbol = op_symbol
 
     # TODO: what other properties could you need? Precedence, associativity, identity, etc.
-
-    def __eq__(self, other):
-        if type(self) == type(other):
-            return self.lhs == other.lhs and self.rhs == other.rhs
-        else:
-            return False
-
     def __str__(self):
         lstring = str(self.lhs)
         rstring = str(self.rhs)
@@ -221,7 +275,7 @@ class BinaryNode(Expression):
         # Haakjes zijn alleen nodig wanneer er in de uitdrukking links of rechts van de operator een
         # andere operator voorkomt die een lagere prioriteit heeft.
         # Onderstaande code checkt of dit het geval is
-        if zoek_op(lstring) > op_nummer(self.op_symbol) and (zoek_op(rstring) <= op_nummer(self.op_symbol)):
+        if zoek_op(lstring) > op_nummer(self.op_symbol) and zoek_op(rstring) <= op_nummer(self.op_symbol):
             return "(%s) %s %s" % (lstring, self.op_symbol, rstring)
         if zoek_op(lstring) <= op_nummer(self.op_symbol) and zoek_op(rstring) > op_nummer(self.op_symbol):
             return "%s %s (%s)" % (lstring, self.op_symbol, rstring)
@@ -265,5 +319,3 @@ class PowNode(BinaryNode):
         super(PowNode, self).__init__(lhs, rhs, '**')
         # TODO: add more subclasses of Expression to represent operators, variables, functions, etc.
 
-a = Expression.fromString('((2 + 3) * 4)')
-print(a)
