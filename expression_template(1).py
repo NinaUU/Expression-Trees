@@ -343,6 +343,6 @@ class PowNode(BinaryNode):
         # TODO: add more subclasses of Expression to represent operators, variables, functions, etc.
 
 
-a = Expression.fromString('x**x')
+a = Expression.fromString('x**5')
 print(a.derivative('x'))
 
