@@ -24,17 +24,6 @@ def tokenize(string):
     for t in tokens:
         if len(ans) > 0 and t == ans[-1] == '*':
             ans[-1] = '**'
-
-        if len(ans) > 1 and t == 'g' and ans[-1] == 'o' and ans[-2] == 'l':
-            1 / 0
-            ans.pop(-1)
-            ans[-1] = 'log'
-
-        if len(ans) > 1 and t == 'n' and ans[-1] == 'i' and ans[-2] == 's':
-            1 / 0
-            ans.pop(-1)
-            ans[-1] = 'sin'
-# Ik weet nog niet zeker of dit nodig is, hij voer de sin functie ook niet uit.
         else:
             ans.append(t)
 
