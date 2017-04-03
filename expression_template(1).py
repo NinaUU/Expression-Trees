@@ -1,4 +1,4 @@
-from math import log
+from math import log, sin, cos, tan
 
 # split a string into mathematical tokens
 # returns a list of numbers, operators, parantheses and commas
@@ -26,9 +26,15 @@ def tokenize(string):
             ans[-1] = '**'
 
         if len(ans) > 1 and t == 'g' and ans[-1] == 'o' and ans[-2] == 'l':
-            ans.pop[-1]
+            1 / 0
+            ans.pop(-1)
             ans[-1] = 'log'
 
+        if len(ans) > 1 and t == 'n' and ans[-1] == 'i' and ans[-2] == 's':
+            1 / 0
+            ans.pop(-1)
+            ans[-1] = 'sin'
+# Ik weet nog niet zeker of dit nodig is, hij voer de sin functie ook niet uit.
         else:
             ans.append(t)
 
@@ -101,10 +107,11 @@ class Expression():
         # rang van operators
         first_op_list = ['**']
         second_op_list = ['*', '/']
-        trird_op_list = ['+', '-']
+        third_op_list = ['+', '-']
         # list of operators, op volgoder van miste naar meeste voorrang
         oplist = ['+', '-', '*', '/', '**']
-        functionlist = ['log']
+        precidence = {'+': 0, '-': 1, '*': 2, '/': 2, '**': 3}
+        functionlist = ['log', 'sin', 'tan', 'cos']
 
         for token in tokens:
             if isnumber(token):
@@ -119,22 +126,26 @@ class Expression():
                 while True:
                     if len(stack) == 0 or stack[-1] not in oplist:
                         break
-                    output.append(stack.pop())
+                    print(token)
+                    print(stack[-1])
+                    if precidence[token] > precidence[stack[-1]]:
+                        break
 
-                    if token in second_op_list and stack[-1] in trird_op_list:
+                    if token in second_op_list and stack[-1] in third_op_list:
                         break  # dan moet hij op de stack
                     if token in first_op_list and stack[-1] in second_op_list:
                         break
                     if token in first_op_list and stack[-1] in third_op_list:
                         break  # alle variaties van lagere rang
                     if token in third_op_list and stack[-1] in third_op_list:
-                        break  # machtsverheven in rechtsacciosatief, dus moeten achter elkaar op de stack
-
+                        break  # machtsverheven in rechtsacciosatief,
+                        # dus moeten achter elkaar op de stack
+                    output.append(stack.pop())
                     # TODO: when there are more operators, the rules are more complicated
                     # werkt nu voor plus en min, allecombinaties
                 # push the new operator onto the stack
                 stack.append(token)
-            elif token == 'log':
+            elif token in functionlist:
                 # TODO: wat is de voorrang van log, Sin, ect
                 stack.append(token)
             elif token == '(':
@@ -304,3 +315,24 @@ class LogNode(MonoNode):
 
     def __init__(self, lhs):
         super(logNode, self).__init__(lhs, "log")
+
+
+class SinNode(MonoNode):
+    """Reprecenteerd de sinus functie"""
+
+    def __init__(self, lhs):
+        super(SinNode, self).__init__(lhs, "sin")
+
+
+class CosNode(MonoNode):
+    """Reprecenteerd de cosinus functie"""
+
+    def __init__(self, lhs):
+        super(CosNode, self).__init__(lhs, "cos")
+
+
+class TanNode(MonoNode):
+    """Reprecenteerd de tangus functie"""
+
+    def __init__(self, lhs):
+        super(TanNode, self).__init__(lhs, "tan")
