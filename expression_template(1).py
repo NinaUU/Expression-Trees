@@ -1,11 +1,13 @@
-import math
+from math import log, sin, cos, tan
 
 # split a string into mathematical tokens
 # returns a list of numbers, operators, parantheses and commas
 # output will not contain spaces
+
+
 def tokenize(string):
     splitchars = list("+-*/(),")
-    
+
     # surround any splitchar by spaces
     tokenstring = []
     for c in string:
@@ -14,15 +16,27 @@ def tokenize(string):
         else:
             tokenstring.append(c)
     tokenstring = ''.join(tokenstring)
-    #split on spaces - this gives us our tokens
+    # split on spaces - this gives us our tokens
     tokens = tokenstring.split()
-    
-    #special casing for **:
+
+    # special casing for **:
     ans = []
     for t in tokens:
         if len(ans) > 0 and t == ans[-1] == '*':
             ans[-1] = '**'
+
+        if len(ans) > 1 and t == 'g' and ans[-1] == 'o' and ans[-2] == 'l':
+            1 / 0
+            ans.pop(-1)
+            ans[-1] = 'log'
+
+        if len(ans) > 1 and t == 'n' and ans[-1] == 'i' and ans[-2] == 's':
+            1 / 0
+            ans.pop(-1)
+            ans[-1] = 'sin'
+# Ik weet nog niet zeker of dit nodig is, hij voer de sin functie ook niet uit.
         else:
+
             ans.append(t) 
 
     #special casing for negative numbers:
@@ -39,6 +53,8 @@ def tokenize(string):
     return ans
 
 # check if a string represents a numeric value
+
+
 def isnumber(string):
     try:
         float(string)
@@ -46,7 +62,9 @@ def isnumber(string):
     except ValueError:
         return False
 
-# check if a string represents an integer value        
+# check if a string represents an integer value
+
+
 def isint(string):
     try:
         int(string)
@@ -77,18 +95,23 @@ def zoek_op(st):
 
 class Expression():
     """A mathematical expression, represented as an expression tree"""
-    
+
     """
     Any concrete subclass of Expression should have these methods:
      - __str__(): return a string representation of the Expression.
      - __eq__(other): tree-equality, check if other represents the same expression tree.
     """
-    # TODO: when adding new methods that should be supported by all subclasses, add them to this list
-    
+    # TODO: when adding new methods that should be supported by all
+    # subclasses, add them to this list
+
     # operator overloading:
-    # this allows us to perform 'arithmetic' with expressions, and obtain another expression
+    # this allows us to perform 'arithmetic' with expressions, and obtain
+    # another expression
     def __add__(self, other):
         return AddNode(self, other)
+
+    def log(self):
+        return LogNode(self)
     
     def __sub__(self,other):
         return SubNode(self,other)
@@ -109,7 +132,7 @@ class Expression():
     # TODO: other overloads, such as __sub__, __mul__, etc.
     
     # basic Shunting-yard algorithm
-    def fromString(string): # van een string (infix) naar expressieboom
+    def fromString(string):  # van een string (infix) naar expressieboom
         # split into tokens
         tokens = tokenize(string)
 
@@ -119,14 +142,17 @@ class Expression():
         # this will contain Constant's and '+'s
         output = []
 
-        ## rang van operators
+        # rang van operators
         first_op_list = ['**']
+        # list of operators, op volgoder van miste naar meeste voorrang
+        oplist = ['+', '-', '*', '/', '**']
+        precidence = {'+': 0, '-': 1, '*': 2, '/': 2, '**': 3}
+        functionlist = ['log', 'sin', 'tan', 'cos']
         second_op_list = ['*','/']
         third_op_list = ['-']
         fourth_op_list=['+']
         # list of operators
         oplist = third_op_list+second_op_list+first_op_list+fourth_op_list
-
 
         for token in tokens:
             if isnumber(token):
@@ -136,7 +162,8 @@ class Expression():
                 else:
                     output.append(Constant(float(token)))
             elif token in oplist:
-                # pop operators from the stack to the output until the top is no longer an operator
+                # pop operators from the stack to the output until the top is
+                # no longer an operator
                 while True:
                     if len(stack) == 0 or stack[-1] not in oplist:
                         break
@@ -155,26 +182,32 @@ class Expression():
                     if token in first_op_list and stack[-1] in second_op_list:
                         break
                     if token in first_op_list and stack[-1] in third_op_list:
-                        break ##alle variaties van lagere rang
+                        break  # alle variaties van lagere rang
                     if token in third_op_list and stack[-1] in third_op_list:
-                        break ## machtsverheven in rechtsacciosatief, dus moeten achter elkaar op de stack
-
+                        break  # machtsverheven in rechtsacciosatief,
+                        # dus moeten achter elkaar op de stack
+                    output.append(stack.pop())
                     # TODO: when there are more operators, the rules are more complicated
-                    ## werkt nu voor plus en min, allecombinaties
+                    # werkt nu voor plus en min, allecombinaties
                 # push the new operator onto the stack
+                stack.append(token)
+            elif token in functionlist:
+                # TODO: wat is de voorrang van log, Sin, ect
                 stack.append(token)
             elif token == '(':
                 # left parantheses go to the stack
                 stack.append(token)
             elif token == ')':
-                # right paranthesis: pop everything upto the last left paranthesis to the output
+                # right paranthesis: pop everything upto the last left
+                # paranthesis to the output
                 while not stack[-1] == '(':
                     output.append(stack.pop())
-                # pop the left paranthesis from the stack (but not to the output)
+                # pop the left paranthesis from the stack (but not to the
+                # output)
                 stack.pop()
             # TODO: do we need more kinds of tokens?
             elif isinstance(token, str):
-                output.append(Variables(token)) 
+                output.append(Variables(token))
             else:
                 # unknown token
                 raise ValueError('Unknown token: %s' % token)
@@ -186,12 +219,17 @@ class Expression():
         # convert RPN to an actual expression tree
         for t in output:
             if t in oplist:
-                # let eval and operator overloading take care of figuring out what to do
+                # let eval and operator overloading take care of figuring out
+                # what to do
                 y = stack.pop()
                 x = stack.pop()
-                stack.append(eval('x %s y' % t)) ## combineer node met x en node met y met ouder node operator
+                # combineer node met x en node met y met ouder node operator
+                stack.append(eval('x %s y' % t))
+            if t in functionlist:
+                x = stack.pop()
+                stack.append(eval('%s(x)' % t))
             else:
-                # a constant, push it to the stack
+                # a constant, push it to the stack ## of variabele
                 stack.append(t)
         # the resulting expression tree is what's left on the stack
         return stack[0]
@@ -248,16 +286,23 @@ class Expression():
         
 class Constant(Expression):
     """Represents a constant value"""
+
     def __init__(self, value):
         self.value = value
-        
+
+    def __eq__(self, other):
+        if isinstance(other, Constant):
+            return self.value == other.value
+        else:
+            return False
+
     def __str__(self):
         return str(self.value)
-        
+
     # allow conversion to numerical values
     def __int__(self):
         return int(self.value)
-        
+
     def __float__(self):
         return float(self.value)
 
@@ -277,31 +322,43 @@ class Variables(Expression):
         
 class Variables(Expression):
     """Reprecenteerd een variabele"""
-    def __init__(self,value):
+
+    def __init__(self, value):
         self.value = value
 
     def __str__(self):
         return str(self.value)
-    
-    def __eq__(self,other):
+
+    def __eq__(self, other):
         if isinstance(other, Variables):
             return self.value == other.value
         else:
             return False
-        
+
+
 class BinaryNode(Expression):
     """A node in the expression tree representing a binary operator."""
-    
+
     def __init__(self, lhs, rhs, op_symbol):
         self.lhs = lhs
         self.rhs = rhs
         self.op_symbol = op_symbol
-    
-    # TODO: what other properties could you need? Precedence, associativity, identity, etc.
+
+    # TODO: what other properties could you need? Precedence, associativity,
+    # identity, etc.
+
+    def __eq__(self, other):
+        if type(self) == type(other):
+            return self.lhs == other.lhs and self.rhs == other.rhs
+        else:
+            return False
+
     def __str__(self):
         lstring = str(self.lhs)
         rstring = str(self.rhs)
 
+        # TODO: do we always need parantheses?
+        return "(%s %s %s)" % (lstring, self.op_symbol, rstring)
         # Haakjes zijn alleen nodig wanneer er in de uitdrukking links of rechts van de operator een
         # andere operator voorkomt die een lagere prioriteit heeft.
         # Onderstaande code checkt of dit het geval is
@@ -315,27 +372,84 @@ class BinaryNode(Expression):
         
 class AddNode(BinaryNode):
     """Represents the addition operator"""
+
     def __init__(self, lhs, rhs):
         super(AddNode, self).__init__(lhs, rhs, '+')
 
+
 class SubNode(BinaryNode):
     """Represents the subtraction operator"""
-    def __init__(self,lhs,rhs):
-        super(SubNode,self).__init__(lhs,rhs,'-')
+
+    def __init__(self, lhs, rhs):
+        super(SubNode, self).__init__(lhs, rhs, '-')
+
 
 class MulNode(BinaryNode):
     """Represents the multiplication operator"""
-    def __init__(self,lhs,rhs):
-        super(MulNode,self).__init__(lhs,rhs,'*')
+
+    def __init__(self, lhs, rhs):
+        super(MulNode, self).__init__(lhs, rhs, '*')
+
 
 class DivNode(BinaryNode):
     """Represents the division operator"""
-    def __init__(self,lhs,rhs):
-        super(DivNode,self).__init__(lhs,rhs,'/')      
-        
+
+    def __init__(self, lhs, rhs):
+        super(DivNode, self).__init__(lhs, rhs, '/')
+
+
 class PowNode(BinaryNode):
     """Represents the power operator"""
-    def __init__(self,lhs,rhs):
-        super(PowNode,self).__init__(lhs,rhs,'**')        
-# TODO: add more subclasses of Expression to represent operators, variables, functions, etc.
 
+    def __init__(self, lhs, rhs):
+        super(PowNode, self).__init__(lhs, rhs, '**')
+# TODO: add more subclasses of Expression to represent operators,
+# variables, functions, etc.
+
+
+class MonoNode(Expression):
+    """ Een node variand voor functies die een variabele vragen, zoals sin of log."""
+
+    def __init__(self, lhs, op_symbol):
+        self.lhs = lhs
+        self.op_symbol = op_symbol
+
+    def __eq__(self, other):
+        if type(self) == type(other):
+            return self.lhs == other.lhs
+        else:
+            return False
+
+    def __str__(self):
+        lstring = str(self.lhs)
+        return "%s(%s)" % (self.op_symbol, lstring)
+
+        # TODO Haakjes weg werken?
+
+
+class LogNode(MonoNode):
+    """Reprecenteerd de log functie"""
+
+    def __init__(self, lhs):
+        super(logNode, self).__init__(lhs, "log")
+
+
+class SinNode(MonoNode):
+    """Reprecenteerd de sinus functie"""
+
+    def __init__(self, lhs):
+        super(SinNode, self).__init__(lhs, "sin")
+
+
+class CosNode(MonoNode):
+    """Reprecenteerd de cosinus functie"""
+
+    def __init__(self, lhs):
+        super(CosNode, self).__init__(lhs, "cos")
+
+
+class TanNode(MonoNode):
+    """Reprecenteerd de tangus functie"""
+
+    def __init__(self, lhs):
+        super(TanNode, self).__init__(lhs, "tan")
