@@ -1,4 +1,4 @@
-from math import log, sin, cos, tan
+import math
 
 # split a string into mathematical tokens
 # returns a list of numbers, operators, parantheses and commas
@@ -37,19 +37,21 @@ def tokenize(string):
 # Ik weet nog niet zeker of dit nodig is, hij voer de sin functie ook niet uit.
         else:
 
-            ans.append(t) 
+            ans.append(t)
 
-    #special casing for negative numbers:
-    if ans[0]=='-':
-        a=ans.pop(0)
-        b=ans.pop(0) # 0th element was previously 1st element but since element 0 has been removed, element 1 has become the new 0th element
-        ans=[str(a)+str(b)]+ans 
-    for i in range(1,len(ans)-1):
-        if ans[i]=='-' and ans[i-1] in splitchars:
-            a=ans.pop(i)
-            b=ans.pop(i) # ith element was previously (i+1)th element
-            ans.insert(i,str(a)+str(b))
-
+    # special casing for negative numbers:
+    if ans[0] == '-':
+        a = ans.pop(0)
+        # 0th element was previously 1st element but since element 0 has been
+        # removed, element 1 has become the new 0th element
+        b = ans.pop(0)
+        ans = [str(a) + str(b)] + ans
+    for i in range(1, len(ans) - 1):
+        if ans[i] == '-' and ans[i - 1] in splitchars:
+            a = ans.pop(i)
+            b = ans.pop(i)  # ith element was previously (i+1)th element
+            ans.insert(i, str(a) + str(b))
+    print(ans)
     return ans
 
 # check if a string represents a numeric value
@@ -74,6 +76,8 @@ def isint(string):
 
 # returns the number of priority of an operator
 # the lower the priority, the higher the number
+
+
 def op_nummer(op):
     if op == '**':
         return 1
@@ -84,6 +88,8 @@ def op_nummer(op):
 
 # returns priority number of the operator in the string with lowest priority
 # the lower the priority, the higher the number
+
+
 def zoek_op(st):
     result = 1
     for s in st:
@@ -92,6 +98,7 @@ def zoek_op(st):
         if s == '+' or s == '-':
             result = 3
     return result
+
 
 class Expression():
     """A mathematical expression, represented as an expression tree"""
@@ -112,25 +119,25 @@ class Expression():
 
     def log(self):
         return LogNode(self)
-    
-    def __sub__(self,other):
-        return SubNode(self,other)
 
-    def __mul__(self,other):
-        return MulNode(self,other)
-    
+    def __sub__(self, other):
+        return SubNode(self, other)
+
+    def __mul__(self, other):
+        return MulNode(self, other)
+
     def __rmul__(self, other):
-        return MulNode(self,other)
+        return MulNode(self, other)
 
-    def __truediv__(self,other):
+    def __truediv__(self, other):
 
-        return DivNode(self,other)
-    
-    def __pow__(self,other):
-        return PowNode(self,other)
-        
+        return DivNode(self, other)
+
+    def __pow__(self, other):
+        return PowNode(self, other)
+
     # TODO: other overloads, such as __sub__, __mul__, etc.
-    
+
     # basic Shunting-yard algorithm
     def fromString(string):  # van een string (infix) naar expressieboom
         # split into tokens
@@ -144,15 +151,12 @@ class Expression():
 
         # rang van operators
         first_op_list = ['**']
+        second_op_list = ['*', '/']
+        third_op_list = ['+', '-']
         # list of operators, op volgoder van miste naar meeste voorrang
         oplist = ['+', '-', '*', '/', '**']
         precidence = {'+': 0, '-': 1, '*': 2, '/': 2, '**': 3}
         functionlist = ['log', 'sin', 'tan', 'cos']
-        second_op_list = ['*','/']
-        third_op_list = ['-']
-        fourth_op_list=['+']
-        # list of operators
-        oplist = third_op_list+second_op_list+first_op_list+fourth_op_list
 
         for token in tokens:
             if isnumber(token):
@@ -167,25 +171,10 @@ class Expression():
                 while True:
                     if len(stack) == 0 or stack[-1] not in oplist:
                         break
-                    if token in second_op_list and stack[-1] in third_op_list+fourth_op_list:
-                        break ## dan moet hij op de stack
-                    if token in first_op_list and stack[-1] in second_op_list+third_op_list+fourth_op_list:
+                    print(token)
+                    print(stack[-1])
+                    if precidence[token] > precidence[stack[-1]]:
                         break
-                    if token in third_op_list and stack[-1] in fourth_op_list:
-                        break
-                    if token in fourth_op_list and stack[-1] in fourth_op_list:
-                        break 
-                    output.append(stack.pop())
-                    
-                    if token in second_op_list and stack[-1] in trird_op_list:
-                        break ## dan moet hij op de stack
-                    if token in first_op_list and stack[-1] in second_op_list:
-                        break
-                    if token in first_op_list and stack[-1] in third_op_list:
-                        break  # alle variaties van lagere rang
-                    if token in third_op_list and stack[-1] in third_op_list:
-                        break  # machtsverheven in rechtsacciosatief,
-                        # dus moeten achter elkaar op de stack
                     output.append(stack.pop())
                     # TODO: when there are more operators, the rules are more complicated
                     # werkt nu voor plus en min, allecombinaties
@@ -234,56 +223,64 @@ class Expression():
         # the resulting expression tree is what's left on the stack
         return stack[0]
 
-    def __eq__(self,other):
-        op_commutative=['+','*'] # list of commutative operators
-        n_op_commutative=['-','/','**'] # list of operators that are not commutative
-        if isinstance(self,BinaryNode) and isinstance(other,BinaryNode): # recursive code since there are more nodes below that also need to be compared
-            if self.op_symbol!=other.op_symbol:
+    def __eq__(self, other):
+        op_commutative = ['+', '*']  # list of commutative operators
+        # list of operators that are not commutative
+        n_op_commutative = ['-', '/', '**']
+        # recursive code since there are more nodes below that also need to be
+        # compared
+        if isinstance(self, BinaryNode) and isinstance(other, BinaryNode):
+            if self.op_symbol != other.op_symbol:
                 return False
             # from here on we know self.op_symbol==other.op_symbol
-            if self.op_symbol in n_op_commutative: 
+            if self.op_symbol in n_op_commutative:
                 return self.lhs.__eq__(other.lhs) and self.rhs.__eq__(other.rhs)
-            elif self.op_symbol in op_commutative: 
+            elif self.op_symbol in op_commutative:
                 return (self.lhs.__eq__(other.lhs) and self.rhs.__eq__(other.rhs)) or (self.lhs.__eq__(other.rhs) and self.rhs.__eq__(other.lhs))
-        elif isinstance(self,Constant) and isinstance(other,Constant): # only one execution since Constants only occur in leaves
-            return self.value==other.value
-        else: # if the types are not the same, the nodes cannot be compared
+        # only one execution since Constants only occur in leaves
+        elif isinstance(self, Constant) and isinstance(other, Constant):
+            return self.value == other.value
+        else:  # if the types are not the same, the nodes cannot be compared
             return False
 
-    def evaluate(self,dictionary={}):
+    def evaluate(self, dictionary={}):
         """ A function that calculates the numerical value of an expression.
             dictionary = a dictionary assigning values to the variables """
-        if isinstance(self.lhs,BinaryNode) or isinstance(self.rhs,BinaryNode): # recursive loop until no more operators are encountered
-            if isinstance(self.lhs,BinaryNode) and isinstance(self.rhs,BinaryNode):
-                return eval(str(self.lhs.evaluate(dictionary))+self.op_symbol+str(self.rhs.evaluate(dictionary)))
-            if isinstance(self.lhs,BinaryNode):
-                return eval(str(self.lhs.evaluate(dictionary))+self.op_symbol+str(self.rhs.value))
-            if isinstance(self.rhs,BinaryNode):
-                return eval(str(self.lhs.value)+self.op_symbol+str(self.rhs.evaluate(dictionary)))
-        # no more operators encountered means that the next nodes are constants or variables or a combination
-        return eval(str(self.lhs.value)+self.op_symbol+str(self.rhs.value),dictionary)
-    
-    def derivative(self,x): #returns the derivative of the expression with respect to x
-        if isinstance(self,Constant):   #The derivative of a constant is 0
+        if isinstance(self.lhs, BinaryNode) or isinstance(self.rhs, BinaryNode):  # recursive loop until no more operators are encountered
+            if isinstance(self.lhs, BinaryNode) and isinstance(self.rhs, BinaryNode):
+                return eval(str(self.lhs.evaluate(dictionary)) + self.op_symbol + str(self.rhs.evaluate(dictionary)))
+            if isinstance(self.lhs, BinaryNode):
+                return eval(str(self.lhs.evaluate(dictionary)) + self.op_symbol + str(self.rhs.value))
+            if isinstance(self.rhs, BinaryNode):
+                return eval(str(self.lhs.value) + self.op_symbol + str(self.rhs.evaluate(dictionary)))
+        # no more operators encountered means that the next nodes are constants
+        # or variables or a combination
+        return eval(str(self.lhs.value) + self.op_symbol + str(self.rhs.value), dictionary)
+
+    def derivative(self, x):  # returns the derivative of the expression with respect to x
+        if isinstance(self, Constant):  # The derivative of a constant is 0
             return 0
-        if isinstance(self,Variables):
-            if self == Variables(x):    #The derivative of x is 1
+        if isinstance(self, Variables):
+            if self == Variables(x):  # The derivative of x is 1
                 return 1
             else:
-                return 0            #The derivative of other variables is 0
-        if self.op_symbol == '+':   #The derivative of a sum is the sum of the derivatives
+                return 0  # The derivative of other variables is 0
+        if self.op_symbol == '+':  # The derivative of a sum is the sum of the derivatives
             return self.lhs.derivative(x) + self.rhs.derivative(x)
-        if self.op_symbol == '-':   #The derivative of a difference is the difference of the derivatives
+        if self.op_symbol == '-':  # The derivative of a difference is the difference of the derivatives
             return self.lhs.derivative(x) - self.rhs.derivative(x)
-        if self.op_symbol == '*':   #The product rule
+        if self.op_symbol == '*':  # The product rule
             return self.lhs * self.rhs.derivative(x) + self.lhs.derivative(x) * self.rhs
-        if self.op_symbol == '/':   #The quotient rule
+        if self.op_symbol == '/':  # The quotient rule
             return (self.rhs * self.lhs.derivative(x) - self.lhs * self.rhs.derivative(x)) / (self.rhs ** 2)
-        if self.op_symbol == '**' and isinstance(self.rhs,Constant):  #The power rule
+        # The power rule
+        if self.op_symbol == '**' and isinstance(self.rhs, Constant):
             return self.rhs * self.lhs ** (self.rhs.value - 1) * self.lhs.derivative(x)
-        #if self.op_symbol == '**': #Logaritmisch differentiëren(werkt nog niet want log() bestaat nog niet)
-            #return self * (self.rhs.derivative(x)*log(self.lhs) + self.lhs.derivative(x)*self.rhs/self.lhs)
-        
+        # if self.op_symbol == '**': #Logaritmisch differentiëren(werkt nog niet want log() bestaat nog niet)
+            # return self * (self.rhs.derivative(x)*log(self.lhs) +
+            # self.lhs.derivative(x)*self.rhs/self.lhs)
+
+
 class Constant(Expression):
     """Represents a constant value"""
 
@@ -306,20 +303,7 @@ class Constant(Expression):
     def __float__(self):
         return float(self.value)
 
-class Variables(Expression):
-    """Reprecenteerd een variabele"""
-    def __init__(self,value):
-        self.value = value
 
-    def __str__(self):
-        return str(self.value)
-    
-    def __eq__(self,other):
-        if isinstance(other, Variables):
-            return self.value == other.value
-        else:
-            return False
-        
 class Variables(Expression):
     """Reprecenteerd een variabele"""
 
@@ -358,7 +342,6 @@ class BinaryNode(Expression):
         rstring = str(self.rhs)
 
         # TODO: do we always need parantheses?
-        return "(%s %s %s)" % (lstring, self.op_symbol, rstring)
         # Haakjes zijn alleen nodig wanneer er in de uitdrukking links of rechts van de operator een
         # andere operator voorkomt die een lagere prioriteit heeft.
         # Onderstaande code checkt of dit het geval is
@@ -369,7 +352,8 @@ class BinaryNode(Expression):
         if zoek_op(lstring) > op_nummer(self.op_symbol) and zoek_op(rstring) > op_nummer(self.op_symbol):
             return "(%s) %s (%s)" % (lstring, self.op_symbol, rstring)
         return "%s %s %s" % (lstring, self.op_symbol, rstring)
-        
+
+
 class AddNode(BinaryNode):
     """Represents the addition operator"""
 
