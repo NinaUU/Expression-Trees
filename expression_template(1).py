@@ -223,19 +223,13 @@ class Expression():
         else:  # if the types are not the same, the nodes cannot be compared
             return False
 
-    def evaluate(self, dictionary={}):
+    def evaluate(self,dictionary={}): # TODO: log, sin, cos, tan
         """ A function that calculates the numerical value of an expression.
             dictionary = a dictionary assigning values to the variables """
-        if isinstance(self.lhs, BinaryNode) or isinstance(self.rhs, BinaryNode):  # recursive loop until no more operators are encountered
-            if isinstance(self.lhs, BinaryNode) and isinstance(self.rhs, BinaryNode):
-                return eval(str(self.lhs.evaluate(dictionary)) + self.op_symbol + str(self.rhs.evaluate(dictionary)))
-            if isinstance(self.lhs, BinaryNode):
-                return eval(str(self.lhs.evaluate(dictionary)) + self.op_symbol + str(self.rhs.value))
-            if isinstance(self.rhs, BinaryNode):
-                return eval(str(self.lhs.value) + self.op_symbol + str(self.rhs.evaluate(dictionary)))
-        # no more operators encountered means that the next nodes are constants
-        # or variables or a combination
-        return eval(str(self.lhs.value) + self.op_symbol + str(self.rhs.value), dictionary)
+        if isinstance(self,BinaryNode): # recursive loop until no more operators are encountered
+            return eval(str(self.lhs.evaluate(dictionary))+self.op_symbol+str(self.rhs.evaluate(dictionary)))
+        # no more operators encountered means that the next nodes are constants or variables or a combination
+        return eval(str(self.value),dictionary)
 
     def derivative(self, x):  # returns the derivative of the expression with respect to x
         if isinstance(self, Constant):  # The derivative of a constant is 0
