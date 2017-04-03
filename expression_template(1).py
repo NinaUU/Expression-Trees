@@ -76,8 +76,6 @@ def isint(string):
 
 # returns the number of priority of an operator
 # the lower the priority, the higher the number
-
-
 def op_nummer(op):
     if op == '**':
         return 1
@@ -86,17 +84,21 @@ def op_nummer(op):
     if op == '+' or op == '-':
         return 3
 
-# returns priority number of the operator in the string with lowest priority
-# the lower the priority, the higher the number
 
-
+#geeft de prioriteit terug van de operator met laagste priorieit
+# (dus hoogste getal) die nog niet ingesloten in door haakjes
 def zoek_op(st):
+    open = 0
     result = 1
     for s in st:
-        if (s == '*' or s == '/') and result != 3:
+        if (s == '*' or s == '/') and (result != 3) and (open == 0):
             result = 2
-        if s == '+' or s == '-':
+        if (s == '+' or s == '-') and open == 0:
             result = 3
+        if s == '(':
+            open += 1
+        if s == ')':
+            open -= 1
     return result
 
 
