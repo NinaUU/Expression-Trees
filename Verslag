@@ -1,0 +1,39 @@
+\documentclass[11pt, oneside]{article}   	
+%\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[dutch]{babel}
+
+
+\title{Verslag naam}
+\author{Nina Bezem, Arja Blok, Isabel Droste}
+\date{}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+	Wat we willen doen in het verslag
+\end{abstract}
+
+\tableofcontents
+
+\section{Introductie}
+
+\section{Achterliggende theorie}
+% RPN postfix 
+% ShutingYardt
+
+% Hoe de boomwerkt
+
+\section{Handleiding van de code}
+
+\subsection{Basis code} %Arja
+%ieder zijn eigen uitleg
+
+\section{Conclusie en discussie}
+
+\section{Taakverdeling}
+
+
+\end{document}  
