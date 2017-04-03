@@ -36,7 +36,6 @@ def tokenize(string):
             ans[-1] = 'sin'
 # Ik weet nog niet zeker of dit nodig is, hij voer de sin functie ook niet uit.
         else:
-
             ans.append(t)
 
     # special casing for negative numbers:
@@ -51,7 +50,6 @@ def tokenize(string):
             a = ans.pop(i)
             b = ans.pop(i)  # ith element was previously (i+1)th element
             ans.insert(i, str(a) + str(b))
-    print(ans)
     return ans
 
 # check if a string represents a numeric value
@@ -168,8 +166,6 @@ class Expression():
                 while True:
                     if len(stack) == 0 or stack[-1] not in oplist:
                         break
-                    print(token)
-                    print(stack[-1])
                     if precidence[token] > precidence[stack[-1]]:
                         break
                     output.append(stack.pop())
