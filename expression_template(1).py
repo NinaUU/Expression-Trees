@@ -96,7 +96,9 @@ class Expression():
     def __mul__(self,other):
         return MulNode(self,other)
     
+
     def __truediv__(self,other):
+
         return DivNode(self,other)
     
     def __pow__(self,other):
@@ -123,6 +125,7 @@ class Expression():
         # list of operators
         oplist = third_op_list+second_op_list+first_op_list+fourth_op_list
 
+
         for token in tokens:
             if isnumber(token):
                 # numbers go directly to the output
@@ -144,6 +147,18 @@ class Expression():
                     if token in fourth_op_list and stack[-1] in fourth_op_list:
                         break 
                     output.append(stack.pop())
+                    
+                    if token in second_op_list and stack[-1] in trird_op_list:
+                        break ## dan moet hij op de stack
+                    if token in first_op_list and stack[-1] in second_op_list:
+                        break
+                    if token in first_op_list and stack[-1] in third_op_list:
+                        break ##alle variaties van lagere rang
+                    if token in third_op_list and stack[-1] in third_op_list:
+                        break ## machtsverheven in rechtsacciosatief, dus moeten achter elkaar op de stack
+
+                    # TODO: when there are more operators, the rules are more complicated
+                    ## werkt nu voor plus en min, allecombinaties
                 # push the new operator onto the stack
                 stack.append(token)
             elif token == '(':
@@ -224,6 +239,20 @@ class Constant(Expression):
     def __float__(self):
         return float(self.value)
 
+class Variables(Expression):
+    """Reprecenteerd een variabele"""
+    def __init__(self,value):
+        self.value = value
+
+    def __str__(self):
+        return str(self.value)
+    
+    def __eq__(self,other):
+        if isinstance(other, Variables):
+            return self.value == other.value
+        else:
+            return False
+        
 class Variables(Expression):
     """Reprecenteerd een variabele"""
     def __init__(self,value):
