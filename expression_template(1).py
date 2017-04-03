@@ -150,11 +150,6 @@ class Expression():
         # output of the algorithm: a list representing the formula in RPN
         # this will contain Constant's and '+'s
         output = []
-
-        # rang van operators
-        first_op_list = ['**']
-        second_op_list = ['*', '/']
-        third_op_list = ['+', '-']
         # list of operators, op volgoder van miste naar meeste voorrang
         oplist = ['+', '-', '*', '/', '**']
         precidence = {'+': 0, '-': 1, '*': 2, '/': 2, '**': 3}
@@ -178,8 +173,6 @@ class Expression():
                     if precidence[token] > precidence[stack[-1]]:
                         break
                     output.append(stack.pop())
-                    # TODO: when there are more operators, the rules are more complicated
-                    # werkt nu voor plus en min, allecombinaties
                 # push the new operator onto the stack
                 stack.append(token)
             elif token in functionlist:
@@ -216,7 +209,7 @@ class Expression():
                 x = stack.pop()
                 # combineer node met x en node met y met ouder node operator
                 stack.append(eval('x %s y' % t))
-            if t in functionlist:
+            elif t in functionlist:
                 x = stack.pop()
                 stack.append(eval('%s(x)' % t))
             else:
