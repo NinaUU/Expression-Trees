@@ -96,6 +96,8 @@ class Expression():
     def __mul__(self,other):
         return MulNode(self,other)
     
+    def __rmul__(self, other):
+        return MulNode(self,other)
 
     def __truediv__(self,other):
 
@@ -222,7 +224,27 @@ class Expression():
                 return eval(str(self.lhs.value)+self.op_symbol+str(self.rhs.evaluate(dictionary)))
         # no more operators encountered means that the next nodes are constants or variables or a combination
         return eval(str(self.lhs.value)+self.op_symbol+str(self.rhs.value),dictionary)
-            
+    
+    def derivative(self,x): #returns the derivative of the expression with respect to x
+        if isinstance(self,Constant):   #The derivative of a constant is 0
+            return 0
+        if isinstance(self,Variables):
+            if self == Variables(x):    #The derivative of x is 1
+                return 1
+            else:
+                return 0            #The derivative of other variables is 0
+        if self.op_symbol == '+':   #The derivative of a sum is the sum of the derivatives
+            return self.lhs.derivative(x) + self.rhs.derivative(x)
+        if self.op_symbol == '-':   #The derivative of a difference is the difference of the derivatives
+            return self.lhs.derivative(x) - self.rhs.derivative(x)
+        if self.op_symbol == '*':   #The product rule
+            return self.lhs * self.rhs.derivative(x) + self.lhs.derivative(x) * self.rhs
+        if self.op_symbol == '/':   #The quotient rule
+            return (self.rhs * self.lhs.derivative(x) - self.lhs * self.rhs.derivative(x)) / (self.rhs ** 2)
+        if self.op_symbol == '**' and isinstance(self.rhs,Constant):  #The power rule
+            return self.rhs * self.lhs ** (self.rhs.value - 1) * self.lhs.derivative(x)
+        #if self.op_symbol == '**': #Logaritmisch differentiëren(werkt nog niet want log() bestaat nog niet)
+            #return self * (self.rhs.derivative(x)*log(self.lhs) + self.lhs.derivative(x)*self.rhs/self.lhs)
         
 class Constant(Expression):
     """Represents a constant value"""
