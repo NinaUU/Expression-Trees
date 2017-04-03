@@ -207,7 +207,7 @@ class Expression():
                 stack.append(eval('x %s y' % t))
             elif t in functionlist:
                 x = stack.pop()
-                stack.append(eval('%s(x)' % t))
+                stack.append(eval('Expression.%s(x)' % t))
             else:
                 # a constant, push it to the stack ## of variabele
                 stack.append(t)
@@ -406,7 +406,7 @@ class LogNode(MonoNode):
     """Reprecenteerd de log functie"""
 
     def __init__(self, lhs):
-        super(logNode, self).__init__(lhs, "log")
+        super(LogNode, self).__init__(lhs, "log")
 
 
 class SinNode(MonoNode):
