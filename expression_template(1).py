@@ -122,6 +122,15 @@ class Expression():
 
     def log(self):
         return LogNode(self)
+    
+    def sin(self):
+        return SinNode(self)
+
+    def cos(self):
+        return CosNode(self)
+
+    def tan(self):
+        return TanNode(self)
 
     def __sub__(self, other):
         return SubNode(self, other)
@@ -408,6 +417,9 @@ class LogNode(MonoNode):
     def __init__(self, lhs):
         super(LogNode, self).__init__(lhs, "log")
 
+    def evaluate(self,dictionary={}):
+        value=eval(str(self.lhs),dictionary)
+        return math.log(value)        
 
 class SinNode(MonoNode):
     """Reprecenteerd de sinus functie"""
@@ -415,6 +427,9 @@ class SinNode(MonoNode):
     def __init__(self, lhs):
         super(SinNode, self).__init__(lhs, "sin")
 
+    def evaluate(self,dictionary={}):
+        value=eval(str(self.lhs),dictionary)
+        return math.sin(value)       
 
 class CosNode(MonoNode):
     """Reprecenteerd de cosinus functie"""
@@ -422,9 +437,16 @@ class CosNode(MonoNode):
     def __init__(self, lhs):
         super(CosNode, self).__init__(lhs, "cos")
 
+    def evaluate(self,dictionary={}):
+        value=eval(str(self.lhs),dictionary)
+        return math.cos(value)        
 
 class TanNode(MonoNode):
     """Reprecenteerd de tangus functie"""
 
     def __init__(self, lhs):
         super(TanNode, self).__init__(lhs, "tan")
+        
+    def evaluate(self,dictionary={}):
+        value=eval(str(self.lhs),dictionary)
+        return math.tan(value)        
