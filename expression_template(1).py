@@ -28,17 +28,31 @@ def tokenize(string):
             ans.append(t)
 
     # special casing for negative numbers:
-    if ans[0] == '-':
-        a = ans.pop(0)
-        # 0th element was previously 1st element but since element 0 has been
-        # removed, element 1 has become the new 0th element
-        b = ans.pop(0)
-        ans = [str(a) + str(b)] + ans
-    for i in range(1, len(ans) - 1):
-        if ans[i] == '-' and ans[i - 1] in splitchars:
-            a = ans.pop(i)
-            b = ans.pop(i)  # ith element was previously (i+1)th element
-            ans.insert(i, str(a) + str(b))
+    # if input string starts with a minus (special casing for **):
+    if ans[0]=='-':
+        if len(ans)==2:
+            a=ans.pop(0)
+            b=ans.pop(0) # 0th element was previously 1st element but since element 0 has been removed, element 1 has become the new 0th element
+            ans=[str(a)+str(b)]+ans
+        elif len(ans)>2:
+            if ans[2]!='**':
+                a=ans.pop(0)
+                b=ans.pop(0)
+                ans=[str(a)+str(b)]+ans
+            else:
+                ans=[0]+ans
+    # if minus sign is encountered straight after another operator (special casing for **):
+    for i in range(1,len(ans)-1):
+        if ans[i]=='-' and ans[i-1] in ['+','-','*','/','**','(']:
+            if len(ans)<=i+2:
+                a=ans.pop(i)
+                b=ans.pop(i) # ith element was previously (i+1)th element
+                ans.insert(i,str(a)+str(b))
+            elif len(ans)>i+2:
+                if ans[i+2]!='**':
+                    a=ans.pop(i)
+                    b=ans.pop(i)
+                    ans.insert(i,str(a)+str(b))
     return ans
 
 # check if a string represents a numeric value
@@ -203,7 +217,7 @@ class Expression():
         # the resulting expression tree is what's left on the stack
         return stack[0]
 
-    def __eq__(self, other):
+    def __eq__(self, other): # TODO: MonoNode
         op_commutative = ['+', '*']  # list of commutative operators
         # list of operators that are not commutative
         n_op_commutative = ['-', '/', '**']
@@ -230,7 +244,10 @@ class Expression():
             return eval(str(self.lhs.evaluate(dictionary))+self.op_symbol+str(self.rhs.evaluate(dictionary)))
         # no more operators encountered means that the next nodes are constants or variables or a combination
         return eval(str(self.value),dictionary)
-
+    
+    def __neg__(self):
+        return Expression.fromString('(-1)*('+str(self)+')')
+    
     def derivative(self, x):  # returns the derivative of the expression with respect to x
         if isinstance(self, Constant):  # The derivative of a constant is 0
             return 0
