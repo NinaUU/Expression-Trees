@@ -197,7 +197,7 @@ class Expression():
                 # pop the left paranthesis from the stack (but not to the
                 # output)
                 stack.pop()
-                if stack[-1] in functionlist:
+                if stack != [] and stack[-1] in functionlist:
                     output.append(stack.pop())
                 stack.pop()
             # TODO: do we need more kinds of tokens?
@@ -259,6 +259,52 @@ class Expression():
     
     def __neg__(self):
         return Expression.fromString('(-1)*('+str(self)+')')
+    
+    def symplify(self):
+        """ A function that simplifies a function by using standard rules.
+        It modefies the expression, so later on te symplified expression is used."""
+        # TODO: a(b+c)= ab + ac, sin2 + con2 = 1,
+        # ax+bx = (a+b)x,
+        if isinstance(self, BinaryNode):
+            self.lhs = self.lhs.symplify()
+            self.rhs = self.rhs.symplify()
+            if isinstance(self, MulNode):
+                if isinstance(self.lhs, Constant) and isinstance(self.rhs, Constant):
+                    self = Constant(self.lhs.value * self.rhs.value)
+                elif self.lhs == Constant(0) or self.rhs == Constant(0):
+                    self = Constant(int(0))
+                elif self.lhs == Constant(1):
+                    self = self.rhs
+                elif self.rhs == Constant(1):
+                    self = self.lhs
+            elif isinstance(self, AddNode):
+                if isinstance(self.lhs, Constant) and isinstance(self.rhs, Constant):
+                    self = Constant(self.lhs.value + self.rhs.value)
+                elif self.lhs == Constant(0):
+                    self = self.rhs
+                elif self.rhs == Constant(0):
+                    self = self.lhs
+            elif isinstance(self, SubNode):
+                if isinstance(self.lhs, Constant) and isinstance(self.rhs, Constant):
+                    self = Constant(self.lhs.value + self.rhs.value)
+                elif self.lhs == Constant(0):
+                    self = -self.rhs
+                elif self.rhs == Constant(0):
+                    self = self.lhs
+            elif isinstance(self, MonoNode):
+                self.lhs = self.lhs.symplify()
+                if isinstance(self, LogNode):
+                    if self.lhs == Constant(1):
+                        self = Constant(0)
+                elif isinstance(self, SinNode):
+                    if self.lhs == Constant(0):
+                        self = Constant(0)
+                elif isinstance(self, CosNode):
+                    if self.lhs == Constant(0):
+                        self = Constant(1)
+            elif isinstance(self, Constant) or isinstance(self, Variables):
+                return self  # einde van de boom
+        return self
     
     def derivative(self, x):  # returns the derivative of the expression with respect to x
         if isinstance(self, Constant):  # The derivative of a constant is 0
