@@ -329,7 +329,16 @@ class Expression():
             # return self * (self.rhs.derivative(x)*log(self.lhs) +
             # self.lhs.derivative(x)*self.rhs/self.lhs)
 
-
+    def num_integration(self,a,b,x,n): #approximates the integral of the expression with resprect to x between a and b with a riemann sum
+        n = n #number of steps
+        xi = a
+        dx = (b-a)/(n)
+        result = 0
+        for i in range(n):
+            result += self.evaluate({x:xi})*dx
+            xi += dx
+        return result            
+            
 class Constant(Expression):
     """Represents a constant value"""
 
@@ -461,7 +470,7 @@ class MonoNode(Expression):
 
 
 class LogNode(MonoNode):
-    """Reprecenteerd de log functie"""
+    """Representeert de log functie"""
 
     def __init__(self, lhs):
         super(LogNode, self).__init__(lhs, "log")
@@ -471,7 +480,7 @@ class LogNode(MonoNode):
         return math.log(value)        
 
 class SinNode(MonoNode):
-    """Reprecenteerd de sinus functie"""
+    """Representeert de sinus functie"""
 
     def __init__(self, lhs):
         super(SinNode, self).__init__(lhs, "sin")
@@ -481,7 +490,7 @@ class SinNode(MonoNode):
         return math.sin(value)       
 
 class CosNode(MonoNode):
-    """Reprecenteerd de cosinus functie"""
+    """Representeert de cosinus functie"""
 
     def __init__(self, lhs):
         super(CosNode, self).__init__(lhs, "cos")
@@ -491,7 +500,7 @@ class CosNode(MonoNode):
         return math.cos(value)        
 
 class TanNode(MonoNode):
-    """Reprecenteerd de tangus functie"""
+    """Representeert de tangus functie"""
 
     def __init__(self, lhs):
         super(TanNode, self).__init__(lhs, "tan")
