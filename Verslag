@@ -21,14 +21,17 @@
 \section{Introductie}
 
 \section{Achterliggende theorie}
-% RPN postfix 
-% ShutingYardt
+\subsection{RPN, Shuting Yardt} %Arja
+Suffixnotatie, ook wel omgekeerde Poolse notatie, is een schrijfwijze van expressies. De conventie in wiskunde is om voor elementaire operaties infix notatie te gebruiken en voor functies prefix. Zo schijven we de opereator $+$ tussen de enteteiten die we willen optellen, en functies als de logaritme staan voor de entiteiten waar deze op werkt. Deze schrijfwijzen kunnen we ook door elkaar gebruiken: $ 4*log(9+x)$ is een geldige wiskundige uitdrukking.
+De `Polish notation' is door de Poolse logicus Jan Łukasiewicz ontwikkeld voor proposietie logica, deze is niet echt aan geslagen maar de `reversed' variant wel. Hierin staan de opeators achter de entiteiten waar deze opslaan. Bijvoorbeeld: $3 4 +$, maar ook $4 5 2 9 + - + $, de volgorde van operator en getal bepaald welke berekeningen worden uitgevoerd. Het voordeel van deze notatie is dat er geen haakjes nodig zijn. 
+
+Voor het omzetten van infixnotatie naar suffixnotatie kan gebruik worden gemaakt van het `Shuting Yardt'-alogartime. Dit alogaritme begint met het lezen van de expresie aan het begin, links. Als het een constante, of variabele tegen komt plaatst deze het in de uitkomst. Als een functie wordt tegen gekomen, wordt deze ook achter de uitkomst geschreven. Bij een primaire operator zoals optekken en vermenigvuldiging wordt dit teken op een `stack' geplaasd. Als er een operator wordt gevonden die een kleinere voorrang heeft dat de huidig eestre operator op de stack, worden operators van de stack gehaald tot de operator op de stack kleiner is, daarna wordt de heudige operator op de stack geplaasd. Bij een linker haakje wordt het haakje op de stach gezet, wanaar het alogaritme verder gaat als of de stack leeg is. Als er een rechts haakje wordt gevonden worden alle operator op de uitkomst geplaast tot het linkerhaakje wordt gevonden. In dat geval gooit het de haakjes weg en gaat verder op de oorsprongelijke manier. Wanneer de te lezen expresie klaar is worden ook weer alle operatoren in die volgorde op de uitkomst gezet. 
 
 % Hoe de boomwerkt
 
 \section{Handleiding van de code}
 
-\subsection{Basis code} %Arja
+\subsection{Basis code}
 %ieder zijn eigen uitleg
 
 \section{Conclusie en discussie}
