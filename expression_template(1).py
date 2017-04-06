@@ -197,6 +197,9 @@ class Expression():
                 # pop the left paranthesis from the stack (but not to the
                 # output)
                 stack.pop()
+                if stack[-1] in functionlist:
+                    output.append(stack.pop())
+                stack.pop()
             # TODO: do we need more kinds of tokens?
             elif isinstance(token, str):
                 output.append(Variables(token))
