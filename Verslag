@@ -1,39 +1,127 @@
 \documentclass[11pt, oneside]{article}   	
-%\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
+\usepackage[parfill]{parskip}    		% Activate to begin paragraphs with an empty line rather than an indent
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{amsmath}
+\usepackage{amssymb}
 \usepackage[dutch]{babel}
+\usepackage{titling}
+\newcommand{\subtitle}[1]{%
+	\posttitle{%
+		\par\end{center}
+	\begin{center}\large#1\end{center}
+	\vskip0.5em}%
+}
+\usepackage{tikz}
+\usetikzlibrary{arrows}
 
-
-\title{Verslag naam}
-\author{Nina Bezem, Arja Blok, Isabel Droste}
-\date{}
-
+\title{Expressiebomen}
+\subtitle{Programmeren in de Wiskunde}
+\author{Nina Bezem, Arja Blok en Isabel Droste}
+\date{14 april 2017}
 \begin{document}
 \maketitle
+\thispagestyle{empty}
 
 \begin{abstract}
 	Wat we willen doen in het verslag
 \end{abstract}
-
+\newpage
 \tableofcontents
+\setcounter{page}{1}
+\newpage
 
 \section{Introductie}
-
-\section{Achterliggende theorie}
+Het rekenen met expressies is belangrijk voor het uitvoeren van ingewikkelde berekeningen. Een voorbeeld van een expressie is $(x+1)^3 + 3^2+ 6\sin(y)$. In een expressie komen getallen, variabelen en operatoren voor. Dit kunnen zowel binaire operatoren (zoals $+$ en $*$) als unaire operatoren (zoals $\sin$ en $\log$) zijn. Een voorbeeld van een programma dat kan rekenen met expressies is \textbf{Wolfram Mathematica}. Dit programma gebruikt hiervoor zogenaamde \textit{expressiebomen}. Dit is een datastructuur waarin de expressies worden opgeslagen. In dit verslag zullen we de theorie hierachter behandelen. Hierbij zullen we ook \textit{Reverse Polish Notation} (RPN) behandelen. Dit is een manier om een expressie op een eenduidige manier zonder haakjes weer te geven. Ook het \textit{Shunting-yardalgoritme} komt aan bod. Dit is een algoritme om een string om te zetten in een expressieboom. We hebben zelf in Python een aantal klassen geschreven die een implementatie zijn van expressiebomen. Voorbeelden van berekeningen die we hiermee kunnen doen zijn: het opslaan van een expresssie, waarden substitueren, het uitrekenen van een expressie, het combineren van twee expressies, negatie, versimpeling, differentiatie en integratie. In het gedeelte \textit{Theorie} zullen we de werking van expressiebomen, RPN en het Shunting-yardalgoritme uitleggen. In het deel \textit{Implementatie} leggen we uit hoe we de theorie hebben ge\"implementeerd in onze eigen code. We zullen de verschillende functionaliteiten uitleggen en een korte handleiding geven voor het gebruik van de code. In het gedeelte \textit{Conclusie en discussie} bespreken we de beperkingen van onze code.
+\section{Theorie}
 % RPN postfix 
 % ShutingYardt
 
-% Hoe de boomwerkt
+% Hoe de boom werkt
+\newpage
+\section{Implementatie}
+\subsection{Basiscode} %Arja
+\subsection{De functionaliteiten van onze code}
+In dit deel zullen we de verschillende berekeningen die onze code kan uitvoeren uitleggen. Bij elke functionaliteit geven we ook een korte handleiding voor het gebruik hiervan.
 
-\section{Handleiding van de code}
+\subsubsection{Het vertalen van een expressie naar een string}
+Een expressie kan worden omgezet naar een string. Dit gebeurt in de methode \texttt{\_\_str\_\_} in de klasse \texttt{BinaryNode}. Het maken van de string gebeurt op een recursieve manier. Er wordt telkens de \texttt{str}-methode aangeroepen van het linker- en het rechterkind. Deze roepen op hun beurt weer de \texttt{str}-methode aan van hun kinderen, enz. Wanneer een kind een \texttt{Constant} of een \texttt{Variable} is, zorgen de \texttt{str}-methoden van die klassen ervoor dat de juiste waarde als string wordt teruggegeven. Op die manier wordt de gehele string opgebouwd. \\
+We hebben ervoor gezorgd dat er alleen maar haakjes worden geplaatst wanneer dit echt nodig is. Wanneer de volgorde waarin de operaties moeten worden uitgevoerd al volgen uit de prioriteit van de operatoren, kunnen haakjes worden weggelaten. Bijvoorbeeld bij de expressie $(2+3)*4$ zijn haakjes nodig maar bij $2+(3*4)$ kunnen ze worden weggelaten. Bij het implementeren hiervan gaat we uit van het volgende idee: wanneer er de binaire boom in een kind van een operator een operator voorkomt die een lagere prioriteit heeft, en deze is nog niet eerder ingesloten door haakjes, dan moeten er haakjes worden geplaatst.  \\
+In afbeelding \ref{haakjesboom} zien we de boom die hoort bij $(2+3)*4*5$. Voor het onderste $*$-teken geldt dat er in zijn linkerkind een operator staat met lagere prioriteit: het $+$-teken. Om $2+3$ moeten dus haakjes worden geplaatst. Voor het bovenste $*$-teken geldt ook dat er in zijn linkerkind een $*$-teken voorkomt, maar dit is al eerder ingesloten door haakjes. Het is dus niet nodig om haakjes te plaatsen om $(2+3)*4$.\\
+Om dit idee te implementeren geven we elke operator een prioriteit.
+We geven $**$ prioriteit 1, $*$ en $/$ krijgen prioriteit 2 en $+$
+en $- $ krijgen prioriteit 3. De functie \texttt{op\_nummer} geeft
+ons de prioriteit van een operator. De functie \texttt{zoek\_op}
+geeft ons de prioriteit van de operator met laagste prioriteit die nog niet eerder ingesloten is door haakjes. Hiervoor gebruiken we de variabele \texttt{open}. De string die van de expressie wordt van links naar rechts doorlopen. Als we een '(' tegenkomen, wordt \texttt{open} met $1$ wordt opgehoogd wanneer we een ')' tegenkomen wordt \texttt{open} met 1 verlaagd. De operatoren die nog niet zijn ingesloten door haakjes zijn nu degenen die we tegenkomen terwijl \texttt{open} gelijk aan $0$ is. We zoeken nu degene hiervan met de laagste prioriteit.\\\\
+\textbf{Handleiding}\\
+Hieronder een voorbeeld van hoe de code gebruikt kan worden\\\\
+\texttt{>>> a = Expression.fromString('(1+x)*3*4')\\
+		>>> print(a)\\
+		(1 + x) * 3 * 4}
 
-\subsection{Basis code} %Arja
-%ieder zijn eigen uitleg
+\begin{figure}
+\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,thick,main node/.style={circle,draw,font=\sffamily\Large\bfseries}]
 
+\node[main node] (1) {$*$};
+\node[main node] (2) [below left of=1] {$*$};
+\node[main node] (3) [below right of=2] {$4$};
+\node[main node] (4) [below right of=1] {$5$};
+\node[main node] (5) [below left of=2] {$+$};
+\node[main node] (6) [below right of=5] {$3$};
+\node[main node] (7) [below left of=5] {$2$};
+
+\path[every node/.style={font=\sffamily\small}]
+(1) edge node [left] {} (4)
+(1) edge node [left] {} (2)
+(2) edge node [right] {} (3)
+(2) edge node [left] {} (5)
+(5) edge node [right] {} (6)
+(5) edge node [left] {} (7);
+\end{tikzpicture}
+\caption{hoi}
+\label{haakjesboom}
+\end{figure}
+
+\subsubsection{Differentiatie}
+Ons programma bevat de functionaliteit differenti\"eren. Hierbij wordt een expressie gedifferentieerd naar een gegeven variabele. Dit gebeurt door de methode \texttt{derivative} in de klasse \texttt{Expression}.  Het differenti\"eren gebeurt door middel van recursie. We hebben daarbij de onderstaande regels ge\"implementeerd. Hierbij is $x$ de variabele waarnaar we differenti\"eren, $f$ en $g$ zijn expressies en $k$ is een constante
+\begin{itemize}
+	\item De afgeleide van een constante is $0$
+	\item De afgeleide van $x$ is $1$
+	\item De afgeleide van elke andere variable is $0$
+	\item $(f+g)' = f' +g'$
+	\item $(f-g)' = f' -g'$
+	\item $(f*g)' = f*g' + f'*g$
+	\item $\left(\frac{f}{g}\right)' = \frac{g*f' - f*g'}{g^2}$
+	\item $(f^k)' = k*f^{k-1}*f'$
+	\item $(f^g)' = f^{g}\left[g'\log(f) + g\frac{f'}{f}\right]$
+\end{itemize}
+Op deze manier breken we het probleem op in steeds kleinere stukken en kunnen we van veel verschillende uitdrukkingen de afgeleide nemen. In het laatste punt zien we dat we ook de afgeleide kunnen nemen van een expressie waarbij de variabele waarnaar we willen differenti\"eren in een exponent staat zoals bij $x^x$. Hiervoor is logaritmisch differenti\"eren nodig. De regel volgt uit het volgende\\
+Zij $h(x) = f(x)^{g(x)}$. Definieer $l(x) = \log(h(x))$. \\ Enerzijds geldt dan dat $l'(x) = \frac{h'(x)}{h(x)}$. Anderzijds geldt $l'(x) = \left[\log(f(x)^{g(x)})\right]' = \left[g(x)\log(f(x))\right]' = g'(x)\log(f(x)) + g(x)\frac{f'(x)}{f(x)}$.\\
+Hieruit volgt $h'(x) = f(x)^{g(x)}\left[g'(x)\log(f(x)) + g(x)\frac{f'(x)}{f(x)}\right]$.\\\\
+\textbf{Handleiding}\\
+De methode \texttt{derivative} heeft als input de expressie en de variabele waarnaar gedifferentieerd moet worden. Deze variabele moet als string worden ingevoerd. Het resultaat is een nieuwe expressie. De bestaande expressie blijft dus onveranderd. Hieronder een voorbeeld\\\\
+\texttt{>>> a = Expression.fromString('2*x**3 + x')\\
+		>>> print(a.derivative('x'))\\
+		2 * 3 * x ** 2 * 1 + x ** 3 * 0 + 1}
+
+\subsubsection{Numerieke integratie}
+De klasse \texttt{Expression} bevat de methode \texttt{num\_integration} waarmee we een expressie numeriek kunnen integreren. Hiervoor gebruiken we een Riemannsom. Stel dat we voor een bepaalde expresse $f$ die afhangt van $x$ willen bepalen
+$$I = \int_{a}^{b}f(x)\text{d}x$$ 
+We delen het interval $[a,b]$ op in $n$ delen van breedte $\Delta x = \frac{b-a}{n}$. Hierdoor ontstaan er $n+1$ punten $x_i =i\left(\frac{b-a}{n}\right)+a$ met $i =0,1,...,n$. We benaderen de integraal met
+$$I \approx \sum_{i=0}^{n-1}f(x_i)\Delta x$$\\\\
+\textbf{Handleiding}\\
+We kunnen deze functionaliteit aanroepen met \texttt{f.num\_integration(a,b,'x',n)}. We kunnen dus kiezen in hoeveel punten we het interval willen verdelen. Meer punten zal leiden tot een kleinere fout in het antwoord maar dit kost wel een langere rekentijd. Omdat gedeeltelijke evaluatie nog niet mogelijk is, kunnen we alleen expressies integreren die maar \'e\'en verschillende variabele bevatten. In onderstaande voorbeeld bepalen we $\int_{0}^{1}(x^2+1)\text{d}x$ met 10000 punten. Het exacte antwoord is $\frac{4}{3}$ dus de fout is ongeveer $5\cdot 10^{-5}$.\\\\
+\texttt{>>> a = Expression.fromString('x**2 + 1')\\
+		>>> print(a.num\_integration(0,1,'x',10000))\\
+		1.3332833349999427}
+\newpage
 \section{Conclusie en discussie}
 
 \section{Taakverdeling}
 
+\newpage	
+\begin{thebibliography}{1}	
+\end{thebibliography}
 
-\end{document}  
+
+\end{document} 
