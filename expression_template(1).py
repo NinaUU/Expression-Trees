@@ -1,5 +1,6 @@
 import math
 
+
 # split a string into mathematical tokens
 # returns a list of numbers, operators, parantheses and commas
 # output will not contain spaces
@@ -29,31 +30,33 @@ def tokenize(string):
 
     # special casing for negative numbers:
     # if input string starts with a minus (special casing for **):
-    if ans[0]=='-':
-        if len(ans)==2:
-            a=ans.pop(0)
-            b=ans.pop(0) # 0th element was previously 1st element but since element 0 has been removed, element 1 has become the new 0th element
-            ans=[str(a)+str(b)]+ans
-        elif len(ans)>2:
-            if ans[2]!='**':
-                a=ans.pop(0)
-                b=ans.pop(0)
-                ans=[str(a)+str(b)]+ans
+    if ans[0] == '-':
+        if len(ans) == 2:
+            a = ans.pop(0)
+            b = ans.pop(
+                0)  # 0th element was previously 1st element but since element 0 has been removed, element 1 has become the new 0th element
+            ans = [str(a) + str(b)] + ans
+        elif len(ans) > 2:
+            if ans[2] != '**':
+                a = ans.pop(0)
+                b = ans.pop(0)
+                ans = [str(a) + str(b)] + ans
             else:
-                ans=[0]+ans
+                ans = [0] + ans
     # if minus sign is encountered straight after another operator (special casing for **):
-    for i in range(1,len(ans)-1):
-        if ans[i]=='-' and ans[i-1] in ['+','-','*','/','**','(']:
-            if len(ans)<=i+2:
-                a=ans.pop(i)
-                b=ans.pop(i) # ith element was previously (i+1)th element
-                ans.insert(i,str(a)+str(b))
-            elif len(ans)>i+2:
-                if ans[i+2]!='**':
-                    a=ans.pop(i)
-                    b=ans.pop(i)
-                    ans.insert(i,str(a)+str(b))
+    for i in range(1, len(ans) - 1):
+        if ans[i] == '-' and ans[i - 1] in ['+', '-', '*', '/', '**', '(']:
+            if len(ans) <= i + 2:
+                a = ans.pop(i)
+                b = ans.pop(i)  # ith element was previously (i+1)th element
+                ans.insert(i, str(a) + str(b))
+            elif len(ans) > i + 2:
+                if ans[i + 2] != '**':
+                    a = ans.pop(i)
+                    b = ans.pop(i)
+                    ans.insert(i, str(a) + str(b))
     return ans
+
 
 # check if a string represents a numeric value
 
@@ -65,6 +68,7 @@ def isnumber(string):
     except ValueError:
         return False
 
+
 # check if a string represents an integer value
 
 
@@ -74,6 +78,7 @@ def isint(string):
         return True
     except ValueError:
         return False
+
 
 # returns the number of priority of an operator
 # the lower the priority, the higher the number
@@ -86,7 +91,7 @@ def op_nummer(op):
         return 3
 
 
-#geeft de prioriteit terug van de operator met laagste priorieit
+# geeft de prioriteit terug van de operator met laagste priorieit
 # (dus hoogste getal) die nog niet ingesloten in door haakjes
 def zoek_op(st):
     open = 0
@@ -111,6 +116,7 @@ class Expression():
      - __str__(): return a string representation of the Expression.
      - __eq__(other): tree-equality, check if other represents the same expression tree.
     """
+
     # TODO: when adding new methods that should be supported by all
     # subclasses, add them to this list
 
@@ -238,9 +244,10 @@ class Expression():
             if self.op_symbol in n_op_commutative:
                 return self.lhs.__eq__(other.lhs) and self.rhs.__eq__(other.rhs)
             elif self.op_symbol in op_commutative:
-                return (self.lhs.__eq__(other.lhs) and self.rhs.__eq__(other.rhs)) or (self.lhs.__eq__(other.rhs) and self.rhs.__eq__(other.lhs))
+                return (self.lhs.__eq__(other.lhs) and self.rhs.__eq__(other.rhs)) or (
+                self.lhs.__eq__(other.rhs) and self.rhs.__eq__(other.lhs))
         elif isinstance(self, MonoNode) and isinstance(other, MonoNode):
-            return type(self)==type(other) and self.lhs.__eq__(other.lhs)
+            return type(self) == type(other) and self.lhs.__eq__(other.lhs)
         # only one execution since Constants only occur in leaves:
         elif isinstance(self, Constant) and isinstance(other, Constant):
             return self.value == other.value
@@ -249,46 +256,45 @@ class Expression():
         else:  # if the types are not the same, the nodes cannot be compared
             return False
 
-    def evaluate(self,dictionary={}):
+    def evaluate(self, dictionary={}):
         """ A function that calculates the numerical value of an expression.
             dictionary = a dictionary assigning values to the variables """
-        if isinstance(self,BinaryNode): # recursive loop until no more operators are encountered
-            return eval(str(self.lhs.evaluate(dictionary))+self.op_symbol+str(self.rhs.evaluate(dictionary)))
+        if isinstance(self, BinaryNode):  # recursive loop until no more operators are encountered
+            return eval(str(self.lhs.evaluate(dictionary)) + self.op_symbol + str(self.rhs.evaluate(dictionary)))
         # no more operators encountered means that the next nodes are constants or variables or a combination
-        return eval(str(self.value),dictionary)
+        return eval(str(self.value), dictionary)
 
-    
-      def part_evaluate(self,dictionary={}):
-        newstring=''
-        if isinstance(self,BinaryNode):
-            newstring+=str(self.lhs.part_evaluate(dictionary))+self.op_symbol+str(self.rhs.part_evaluate(dictionary))          
-        if isinstance(self,Variables):
+    def part_evaluate(self, dictionary={}):
+        newstring = ''
+        if isinstance(self, BinaryNode):
+            newstring += str(self.lhs.part_evaluate(dictionary)) + self.op_symbol + str(
+                self.rhs.part_evaluate(dictionary))
+        if isinstance(self, Variables):
             if str(self.value) not in dictionary:
-                newstring+=self.value
+                newstring += self.value
             else:
-                newstring+=str(eval(self.value, dictionary))
-        if isinstance(self,Constant):
-            newstring+=str(self.value)
-        if isinstance(self,MonoNode):
-            newstring+=self.op_symbol+'('+str(self.lhs.part_evaluate(dictionary))+')'
-        tree=Expression.fromString(newstring)
+                newstring += str(eval(self.value, dictionary))
+        if isinstance(self, Constant):
+            newstring += str(self.value)
+        if isinstance(self, MonoNode):
+            newstring += self.op_symbol + '(' + str(self.lhs.part_evaluate(dictionary)) + ')'
+        tree = Expression.fromString(newstring)
         try:
             return tree.evaluate()
         except NameError:
             return tree
 
-    
     def __neg__(self):
-        return Expression.fromString('(-1)*('+str(self)+')')
+        return Expression.fromString('(-1)*(' + str(self) + ')')
 
-    def symplify(self):
+    def simplify(self):
         """ A function that simplifies a function by using standard rules.
         It modefies the expression, so later on te symplified expression is used."""
         # TODO: a(b+c)= ab + ac, sin2 + con2 = 1,
         # ax+bx = (a+b)x,
         if isinstance(self, BinaryNode):
-            self.lhs = self.lhs.symplify()
-            self.rhs = self.rhs.symplify()
+            self.lhs = self.lhs.simplify()
+            self.rhs = self.rhs.simplify()
             if isinstance(self, MulNode):
                 if isinstance(self.lhs, Constant) and isinstance(self.rhs, Constant):
                     self = Constant(self.lhs.value * self.rhs.value)
@@ -313,7 +319,7 @@ class Expression():
                 elif self.rhs == Constant(0):
                     self = self.lhs
             elif isinstance(self, MonoNode):
-                self.lhs = self.lhs.symplify()
+                self.lhs = self.lhs.simplify()
                 if isinstance(self, LogNode):
                     if self.lhs == Constant(1):
                         self = Constant(0)
@@ -335,6 +341,12 @@ class Expression():
                 return Constant(1)
             else:
                 return Constant(0)  # The derivative of other variables is 0
+        if isinstance(self, SinNode):
+            return CosNode(self.lhs)*self.lhs.derivative(x)
+        if isinstance(self, CosNode):
+            return -SinNode(self.lhs)*self.lhs.derivative(x)
+        if isinstance(self,LogNode):
+            return self.lhs.derivative(x)/self.lhs
         if self.op_symbol == '+':  # The derivative of a sum is the sum of the derivatives
             return self.lhs.derivative(x) + self.rhs.derivative(x)
         if self.op_symbol == '-':  # The derivative of a difference is the difference of the derivatives
@@ -346,41 +358,44 @@ class Expression():
         # The power rule
         if self.op_symbol == '**' and isinstance(self.rhs, Constant):
             return self.rhs * self.lhs ** (self.rhs.value - 1) * self.lhs.derivative(x)
-        # if self.op_symbol == '**': #Logaritmisch differentiëren(werkt nog niet want log() bestaat nog niet)
-            # return self * (self.rhs.derivative(x)*log(self.lhs) +
-            # self.lhs.derivative(x)*self.rhs/self.lhs)
+        if self.op_symbol == '**': #Logaritmisch differentiëren
+            return self * (self.rhs.derivative(x)*LogNode(self.lhs) +
+                    self.lhs.derivative(x)*self.rhs/self.lhs)
 
-    def solve(self, x, y=0, x0=0, toletance = 10**(-5), n=1000):
+    def solve(self, x, y=0, x0=0, toletance=10 ** (-5), n=1000):
         """A function that finds the root of a Expression by using the Netwon alogaritm.
         To prefent endless loops, the maximal itterations has been set"""
-        div=Expression.derivative(self, x).symplify()
-        xm=x0 - (self.evaluate({x: x0})) / (div.evaluate({x: x0}))
+        div = Expression.derivative(self, x).simplify()
+        xm = x0 - (self.evaluate({x: x0})) / (div.evaluate({x: x0}))
         if n != None:
             k = 2
             for k in range(2, n):
                 ym = self.evaluate({x: xm})
-                xn=xm - ym / (div.evaluate({x: xm}))
-                xm=xn
+                xn = xm - ym / (div.evaluate({x: xm}))
+                xm = xn
                 if abs(ym) < toletance:
                     return xm
         else:
             while True:
                 ym = self.evaluate({x: xm})
-                xn=xm - ym / (div.evaluate({x: xm}))
-                xm=xn
+                xn = xm - ym / (div.evaluate({x: xm}))
+                xm = xn
                 if abs(ym) < toletance:
                     return xm
-        raise ValueError('Did not find a root of %s within %s itterations whit x0 = %s and toletance = %s' % self, n ,x0, toletance)
+        raise ValueError('Did not find a root of %s within %s itterations whit x0 = %s and toletance = %s' % self, n,
+                         x0, toletance)
 
-    def num_integration(self,a,b,x,n): #approximates the integral of the expression with resprect to x between a and b with a riemann sum
-        n = n #number of steps
+    def num_integration(self, a, b, x, n,dict={}):  # approximates the integral of the expression with resprect to x between a and b with a riemann sum
+        s = self.part_evaluate(dict)
+        n = n  # number of steps
         xi = a
-        dx = (b-a)/(n)
+        dx = (b - a) / (n)
         result = 0
         for i in range(n):
-            result += self.evaluate({x:xi})*dx
+            result += s.evaluate({x: xi}) * dx
             xi += dx
         return result
+
 
 class Constant(Expression):
     """Represents a constant value"""
@@ -407,7 +422,7 @@ class Variables(Expression):
 
     def __str__(self):
         return str(self.value)
-    
+
 
 class BinaryNode(Expression):
     """A node in the expression tree representing a binary operator."""
@@ -471,6 +486,7 @@ class PowNode(BinaryNode):
     def __init__(self, lhs, rhs):
         super(PowNode, self).__init__(lhs, rhs, '**')
 
+
 class MonoNode(Expression):
     """ Een node variand voor functies die een variabele vragen, zoals sin of log."""
 
@@ -491,9 +507,10 @@ class LogNode(MonoNode):
     def __init__(self, lhs):
         super(LogNode, self).__init__(lhs, "log")
 
-    def evaluate(self,dictionary={}):
-        value=eval(str(self.lhs),dictionary)
+    def evaluate(self, dictionary={}):
+        value = eval(str(self.lhs), dictionary)
         return math.log(value)
+
 
 class SinNode(MonoNode):
     """Representeert de sinus functie"""
@@ -501,9 +518,10 @@ class SinNode(MonoNode):
     def __init__(self, lhs):
         super(SinNode, self).__init__(lhs, "sin")
 
-    def evaluate(self,dictionary={}):
-        value=eval(str(self.lhs),dictionary)
+    def evaluate(self, dictionary={}):
+        value = eval(str(self.lhs), dictionary)
         return math.sin(value)
+
 
 class CosNode(MonoNode):
     """Representeert de cosinus functie"""
@@ -511,9 +529,10 @@ class CosNode(MonoNode):
     def __init__(self, lhs):
         super(CosNode, self).__init__(lhs, "cos")
 
-    def evaluate(self,dictionary={}):
-        value=eval(str(self.lhs),dictionary)
+    def evaluate(self, dictionary={}):
+        value = eval(str(self.lhs), dictionary)
         return math.cos(value)
+
 
 class TanNode(MonoNode):
     """Representeert de tangus functie"""
@@ -521,6 +540,7 @@ class TanNode(MonoNode):
     def __init__(self, lhs):
         super(TanNode, self).__init__(lhs, "tan")
 
-    def evaluate(self,dictionary={}):
-        value=eval(str(self.lhs),dictionary)
+    def evaluate(self, dictionary={}):
+        value = eval(str(self.lhs), dictionary)
         return math.tan(value)
+
