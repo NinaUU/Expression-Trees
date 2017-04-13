@@ -120,18 +120,6 @@ class Expression():
     def __add__(self, other):
         return AddNode(self, other)
 
-    def log(self):
-        return LogNode(self)
-    
-    def sin(self):
-        return SinNode(self)
-
-    def cos(self):
-        return CosNode(self)
-
-    def tan(self):
-        return TanNode(self)
-
     def __sub__(self, other):
         return SubNode(self, other)
 
@@ -148,7 +136,17 @@ class Expression():
     def __pow__(self, other):
         return PowNode(self, other)
 
-    # TODO: other overloads, such as __sub__, __mul__, etc.
+    def log(self):
+        return LogNode(self)
+
+    def sin(self):
+        return SinNode(self)
+
+    def cos(self):
+        return CosNode(self)
+
+    def tan(self):
+        return TanNode(self)
 
     # basic Shunting-yard algorithm
     def fromString(string):  # van een string (infix) naar expressieboom
@@ -199,8 +197,6 @@ class Expression():
                 stack.pop()
                 if stack != [] and stack[-1] in functionlist:
                     output.append(stack.pop())
-                stack.pop()
-            # TODO: do we need more kinds of tokens?
             elif isinstance(token, str):
                 output.append(Variables(token))
             else:
@@ -256,10 +252,10 @@ class Expression():
             return eval(str(self.lhs.evaluate(dictionary))+self.op_symbol+str(self.rhs.evaluate(dictionary)))
         # no more operators encountered means that the next nodes are constants or variables or a combination
         return eval(str(self.value),dictionary)
-    
+
     def __neg__(self):
         return Expression.fromString('(-1)*('+str(self)+')')
-    
+
     def symplify(self):
         """ A function that simplifies a function by using standard rules.
         It modefies the expression, so later on te symplified expression is used."""
@@ -305,15 +301,15 @@ class Expression():
             elif isinstance(self, Constant) or isinstance(self, Variables):
                 return self  # einde van de boom
         return self
-    
+
     def derivative(self, x):  # returns the derivative of the expression with respect to x
         if isinstance(self, Constant):  # The derivative of a constant is 0
-            return 0
+            return Constant(0)
         if isinstance(self, Variables):
             if self == Variables(x):  # The derivative of x is 1
-                return 1
+                return Constant(1)
             else:
-                return 0  # The derivative of other variables is 0
+                return Constant(0)  # The derivative of other variables is 0
         if self.op_symbol == '+':  # The derivative of a sum is the sum of the derivatives
             return self.lhs.derivative(x) + self.rhs.derivative(x)
         if self.op_symbol == '-':  # The derivative of a difference is the difference of the derivatives
@@ -321,13 +317,35 @@ class Expression():
         if self.op_symbol == '*':  # The product rule
             return self.lhs * self.rhs.derivative(x) + self.lhs.derivative(x) * self.rhs
         if self.op_symbol == '/':  # The quotient rule
-            return (self.rhs * self.lhs.derivative(x) - self.lhs * self.rhs.derivative(x)) / (self.rhs ** 2)
+            return (self.rhs * self.lhs.derivative(x) - self.lhs * self.rhs.derivative(x)) / (self.rhs ** Constant(2))
         # The power rule
         if self.op_symbol == '**' and isinstance(self.rhs, Constant):
             return self.rhs * self.lhs ** (self.rhs.value - 1) * self.lhs.derivative(x)
         # if self.op_symbol == '**': #Logaritmisch differentiëren(werkt nog niet want log() bestaat nog niet)
             # return self * (self.rhs.derivative(x)*log(self.lhs) +
             # self.lhs.derivative(x)*self.rhs/self.lhs)
+
+    def solve(self, x, y=0, x0=0, toletance = 10**(-5), n=1000):
+        """A function that finds the root of a Expression by using the Netwon alogaritm.
+        To prefent endless loops, the maximal itterations has been set"""
+        div=Expression.derivative(self, x).symplify()
+        xm=x0 - (self.evaluate({x: x0})) / (div.evaluate({x: x0}))
+        if n != None:
+            k = 2
+            for k in range(2, n):
+                ym = self.evaluate({x: xm})
+                xn=xm - ym / (div.evaluate({x: xm}))
+                xm=xn
+                if abs(ym) < toletance:
+                    return xm
+        else:
+            while True:
+                ym = self.evaluate({x: xm})
+                xn=xm - ym / (div.evaluate({x: xm}))
+                xm=xn
+                if abs(ym) < toletance:
+                    return xm
+        raise ValueError('Did not find a root of %s within %s itterations whit x0 = %s and toletance = %s' % self, n ,x0, toletance)
 
     def num_integration(self,a,b,x,n): #approximates the integral of the expression with resprect to x between a and b with a riemann sum
         n = n #number of steps
@@ -337,8 +355,8 @@ class Expression():
         for i in range(n):
             result += self.evaluate({x:xi})*dx
             xi += dx
-        return result            
-            
+        return result
+
 class Constant(Expression):
     """Represents a constant value"""
 
@@ -445,9 +463,6 @@ class PowNode(BinaryNode):
 
     def __init__(self, lhs, rhs):
         super(PowNode, self).__init__(lhs, rhs, '**')
-# TODO: add more subclasses of Expression to represent operators,
-# variables, functions, etc.
-
 
 class MonoNode(Expression):
     """ Een node variand voor functies die een variabele vragen, zoals sin of log."""
@@ -477,7 +492,7 @@ class LogNode(MonoNode):
 
     def evaluate(self,dictionary={}):
         value=eval(str(self.lhs),dictionary)
-        return math.log(value)        
+        return math.log(value)
 
 class SinNode(MonoNode):
     """Representeert de sinus functie"""
@@ -487,7 +502,7 @@ class SinNode(MonoNode):
 
     def evaluate(self,dictionary={}):
         value=eval(str(self.lhs),dictionary)
-        return math.sin(value)       
+        return math.sin(value)
 
 class CosNode(MonoNode):
     """Representeert de cosinus functie"""
@@ -497,14 +512,14 @@ class CosNode(MonoNode):
 
     def evaluate(self,dictionary={}):
         value=eval(str(self.lhs),dictionary)
-        return math.cos(value)        
+        return math.cos(value)
 
 class TanNode(MonoNode):
     """Representeert de tangus functie"""
 
     def __init__(self, lhs):
         super(TanNode, self).__init__(lhs, "tan")
-        
+
     def evaluate(self,dictionary={}):
         value=eval(str(self.lhs),dictionary)
-        return math.tan(value)        
+        return math.tan(value)
