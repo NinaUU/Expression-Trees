@@ -141,7 +141,7 @@ De methode \texttt{\_\_eq\_\_} kan toegepast worden op twee bomen die gemaakt zi
 \textbf{Beperkingen}\\
 De code kan niet herkennen dat b.v. $-1+2$ en $2-1$ hetzelfde zijn. Dit zou lastig te implementeren zijn omdat je iets zou kunnen doen zoals: als \texttt{self.op\_symbol==’+’} en \texttt{other.op\_symbol==’-‘} (of andersom), kijk dan of de linkerkant van de ene boom gelijk is aan de negatie van de andere boom, en de rechterkant gelijk aan de linkerkant van de ander. Het probleem zit dan in de negatie. De negatie van een boom geeft $(-1)$ keer de oorspronkelijke boom, maar de code herkent de gelijkheid van $-1$ en $(-1)*1$ niet. Dit zou ge\"implementeerd kunnen worden, maar dit wordt ingewikkeld omdat 1 weer opgebouwd kan worden van bij voorbeeld $0+1$, dus moet ook de gelijkenis van $(-1)*(0+1)$ of nog grotere bomen herkend worden. Dit zou opgelost kunnen worden door een versimpeling hiervoor te implementeren.
 
-\subsubsection{Het numeriek uitrekenen van de expressie}
+\subsubsection{Het numeriek uitrekenen van de expressie} % Nog iets schrijven over part_evaluate!!!
 Als men de numerieke waarde van een expressie zou willen berekenen, ofwel een expressie 'evalueren', dan zou dat kunnen met de methode \texttt{evaluate} van de klasse \texttt{Expression}. Deze methode neemt als input een dictionary die waarden toekent aan de variabelen van de expressie. Als er geen variabelen in de expressieboom zitten, dan hoeft er geen input gegeven te worden en gaat de code er vanuit dat er een lege dictionary \texttt{\{\}} wordt meegegeven. Ook maakt de methode gebruik van de ingebouwde functionaliteit \texttt{eval} van Python, die ook als input een dictionary moet krijgen voor onbekende variabelen. De methode \texttt{evaluate} loopt de expressieboom af totdat hij bij een knoop van het type \texttt{Constant}, \texttt{Variables}, \texttt{LogNode}, \texttt{SinNode}, \texttt{CosNode} of \texttt{TanNode} komt. Bij zo'n knoop berekent hij eevoudig de numerieke waarde. Voor een  \texttt{Constant} of \texttt{Variables} knoop houdt dat in het invullen van de waarde (voor variabelen uit de bijgevoegde dicionary gehaald) in \texttt{eval}. Voor een \texttt{LogNode}, \texttt{SinNode}, \texttt{CosNode} of \texttt{TanNode} staat een aparte \texttt{evaluate} methode in zijn eigen klasse. Vervolgens voegt de code de uitkomsten samen voor alle \texttt{BinaryNode}s van onder naar boven met behulp van \texttt{eval}. \\\\
 
 \textbf{Handleiding}\\
@@ -152,10 +152,7 @@ Hieronder volgt een voorbeeld van hoe de methode \texttt{evaluate} kan worden to
 		3 \\
 		>>>b = Expression.fromString('x+sin(pi)')\\
 		>>> print(b.evaluate(\{'x':1,'pi':math.pi\})\\
-		1}
-
-\textbf{Beperkingen}\\
-Gedeeltelijke evaluatie is nog niet ondersteund.		
+		1}		
 		
 \newpage
 \section{Conclusie en discussie}
