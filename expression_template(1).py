@@ -257,7 +257,8 @@ class Expression():
         # no more operators encountered means that the next nodes are constants or variables or a combination
         return eval(str(self.value),dictionary)
 
-     def part_evaluate(self,dictionary={}):
+    
+      def part_evaluate(self,dictionary={}):
         newstring=''
         if isinstance(self,BinaryNode):
             newstring+=str(self.lhs.part_evaluate(dictionary))+self.op_symbol+str(self.rhs.part_evaluate(dictionary))          
@@ -270,7 +271,12 @@ class Expression():
             newstring+=str(self.value)
         if isinstance(self,MonoNode):
             newstring+=self.op_symbol+'('+str(self.lhs.part_evaluate(dictionary))+')'
-        return Expression.fromString(newstring).symplify()
+        tree=Expression.fromString(newstring)
+        try:
+            return tree.evaluate()
+        except NameError:
+            return tree
+
     
     def __neg__(self):
         return Expression.fromString('(-1)*('+str(self)+')')
