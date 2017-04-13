@@ -225,7 +225,7 @@ class Expression():
         # the resulting expression tree is what's left on the stack
         return stack[0]
 
-    def __eq__(self, other): # TODO: MonoNode
+    def __eq__(self, other): # log(2)+1 en 1+log(2) vergelijken geeft nog niet het juiste antwoord.
         op_commutative = ['+', '*']  # list of commutative operators
         # list of operators that are not commutative
         n_op_commutative = ['-', '/', '**']
@@ -239,13 +239,17 @@ class Expression():
                 return self.lhs.__eq__(other.lhs) and self.rhs.__eq__(other.rhs)
             elif self.op_symbol in op_commutative:
                 return (self.lhs.__eq__(other.lhs) and self.rhs.__eq__(other.rhs)) or (self.lhs.__eq__(other.rhs) and self.rhs.__eq__(other.lhs))
-        # only one execution since Constants only occur in leaves
+        elif isinstance(self, MonoNode) and isinstance(other, MonoNode):
+            return type(self)==type(other) and self.lhs.__eq__(other.lhs)
+        # only one execution since Constants only occur in leaves:
         elif isinstance(self, Constant) and isinstance(other, Constant):
+            return self.value == other.value
+        elif isinstance(self, Variables) and isinstance(other, Variables):
             return self.value == other.value
         else:  # if the types are not the same, the nodes cannot be compared
             return False
 
-    def evaluate(self,dictionary={}): # TODO: log, sin, cos, tan
+    def evaluate(self,dictionary={}):
         """ A function that calculates the numerical value of an expression.
             dictionary = a dictionary assigning values to the variables """
         if isinstance(self,BinaryNode): # recursive loop until no more operators are encountered
@@ -363,12 +367,6 @@ class Constant(Expression):
     def __init__(self, value):
         self.value = value
 
-    def __eq__(self, other):
-        if isinstance(other, Constant):
-            return self.value == other.value
-        else:
-            return False
-
     def __str__(self):
         return str(self.value)
 
@@ -388,13 +386,7 @@ class Variables(Expression):
 
     def __str__(self):
         return str(self.value)
-
-    def __eq__(self, other):
-        if isinstance(other, Variables):
-            return self.value == other.value
-        else:
-            return False
-
+    
 
 class BinaryNode(Expression):
     """A node in the expression tree representing a binary operator."""
@@ -406,12 +398,6 @@ class BinaryNode(Expression):
 
     # TODO: what other properties could you need? Precedence, associativity,
     # identity, etc.
-
-    def __eq__(self, other):
-        if type(self) == type(other):
-            return self.lhs == other.lhs and self.rhs == other.rhs
-        else:
-            return False
 
     def __str__(self):
         lstring = str(self.lhs)
@@ -470,12 +456,6 @@ class MonoNode(Expression):
     def __init__(self, lhs, op_symbol):
         self.lhs = lhs
         self.op_symbol = op_symbol
-
-    def __eq__(self, other):
-        if type(self) == type(other):
-            return self.lhs == other.lhs
-        else:
-            return False
 
     def __str__(self):
         lstring = str(self.lhs)
