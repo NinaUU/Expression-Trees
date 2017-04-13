@@ -225,7 +225,7 @@ class Expression():
         # the resulting expression tree is what's left on the stack
         return stack[0]
 
-    def __eq__(self, other): # log(2)+1 en 1+log(2) vergelijken geeft nog niet het juiste antwoord.
+    def __eq__(self, other):
         op_commutative = ['+', '*']  # list of commutative operators
         # list of operators that are not commutative
         n_op_commutative = ['-', '/', '**']
