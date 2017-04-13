@@ -115,7 +115,19 @@ We kunnen deze functionaliteit aanroepen met \texttt{f.num\_integration(a,b,'x',
 		>>> print(a.num\_integration(0,1,'x',10000))\\
 		1.3332833349999427}
 		
-% Vanaf hier nieuwe toevoegingen Nina
+% Vanaf hier toevoegingen Nina:
+\subsubsection{Negatie}
+De overload \texttt{\_\_neg\_\_} voor negatie van expressiebomen werkt door de hele boom te vermenigvuldigen met $(-1)$. In feite wordt er dus een \texttt{BinaryNode} aangemaakt met als operator \texttt{*} en als linkertak $(-1)$ en rechtertak de oorspronkelijke boom.
+
+\textbf{Handleiding}\\
+Negatie van een expressieboom werkt door simpelweg een minteken voor de expressieboom te zetten. Bij voorbeeld: \\\\
+\texttt{>>> a = Expression.fromString('2 + 1')\\
+		>>> b =-a\\
+		>>> print(a)\\
+		2+1\\
+		>>> print(b)\\
+		 (-1)*(2+1)}
+
 \subsubsection{Gelijkheid van expressiebomen}
 Of twee expressiebomen dezelfde berekening voorstellen, kan getest worden door middel van de methode \texttt{\_\_eq\_\_} van de klasse \texttt{Expression}. De code voor \texttt{\_\_eq\_\_} loopt recursief langs alle \texttt{BinaryNode}s totdat er een \texttt{MonoNode}, \texttt{Constant} of \texttt{Variables} wordt bereikt. Nodes van deze klassen kunnen eenvoudig worden vergeleken. Voor \texttt{BinaryNode}s is de code iets ingewikkelder. Laten we de expressiebomen die vergeleken worden \texttt{self} en \texttt{other} noemen. Om te beginnen gaat de code er van uit dat twee \texttt{BinaryNode}s alleen gelijk kunnen zijn als zij dezelfde operator bevatten. Daarna wordt er onderscheid gemaakt tussen commutatieve en niet-commutatieve operatoren. Voor commutatieve operatoren wordt er gekeken naar of de linkerkanten van \texttt{self} en \texttt{other} gelijk aan elkaar zijn en de rechterkanten ook, \'of dat de linkerkant van \texttt{self}  gelijk is aan de rechterkant van \texttt{other} en de rechterkant van \texttt{self} gelijk is aan de linkerkant van \texttt{other}. Immers, neem het voorbeeld $2 * 3 = 3 * 2$. Voor niet-commutatieve operatoren wordt er alleen gekeken naar of de linkerkanten van \texttt{self} en \texttt{other} gelijk aan elkaar zijn en de rechterkanten ook. Immers, $2**3 \neq 3**2$ dus geldt het tweede geval van gelijkheid zoals omschreven voor commutatieve operatoren niet. Dat de code recursief is blijkt uit dat de linker- en/of rechterkant van een \texttt{BinaryNode} niet noodzakelijk een \texttt{MonoNode}, \texttt{Constant} of \texttt{Variables} is, maar ook meer \texttt{BinaryNode}s kan bevatten waarvoor het proces herhaald moet worden. Om daarvoor te zorgen wordt de functie \texttt{\_\_eq\_\_} (met het teken \texttt{==}) opnieuw aangeroepen om bij voorbeeld \texttt{self.lhs} met \texttt{other.rhs} te vergelijken, waarbij \texttt{lhs} staat voor "left-hand side", ofwel de linkertak van \texttt{self}/\texttt{other}, en \texttt{rhs} voor "right-hand side", ofwel de rechtertak van de knoop.\\\\
 
