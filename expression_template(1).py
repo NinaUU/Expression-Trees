@@ -257,6 +257,21 @@ class Expression():
         # no more operators encountered means that the next nodes are constants or variables or a combination
         return eval(str(self.value),dictionary)
 
+     def part_evaluate(self,dictionary={}):
+        newstring=''
+        if isinstance(self,BinaryNode):
+            newstring+=str(self.lhs.part_evaluate(dictionary))+self.op_symbol+str(self.rhs.part_evaluate(dictionary))          
+        if isinstance(self,Variables):
+            if str(self.value) not in dictionary:
+                newstring+=self.value
+            else:
+                newstring+=str(eval(self.value, dictionary))
+        if isinstance(self,Constant):
+            newstring+=str(self.value)
+        if isinstance(self,MonoNode):
+            newstring+=self.op_symbol+'('+str(self.lhs.part_evaluate(dictionary))+')'
+        return Expression.fromString(newstring).symplify()
+    
     def __neg__(self):
         return Expression.fromString('(-1)*('+str(self)+')')
 
@@ -286,7 +301,7 @@ class Expression():
                     self = self.lhs
             elif isinstance(self, SubNode):
                 if isinstance(self.lhs, Constant) and isinstance(self.rhs, Constant):
-                    self = Constant(self.lhs.value + self.rhs.value)
+                    self = Constant(self.lhs.value - self.rhs.value)
                 elif self.lhs == Constant(0):
                     self = -self.rhs
                 elif self.rhs == Constant(0):
