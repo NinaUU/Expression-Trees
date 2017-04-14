@@ -221,8 +221,10 @@ Het schrijven van de code voor
 \item Overload van de gelijkheidsoperator
 \item Het berekenen van de numerieke waarde van een expressie (\texttt{evaluate} en \texttt{part\_evaluate})
 \item Negatie
+\item Een deel van \texttt{tokenize} voor het begrijpen van negatieve getallen in de input
 \end{itemize}
-en het schrijven van de overeenkomstige delen van verslag.
+en het schrijven van de overeenkomstige delen van verslag (met uitzondering van het stukje code in \texttt{tokenize}).
+
 
 \newpage	
 \begin{thebibliography}{1}	
