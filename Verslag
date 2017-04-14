@@ -26,7 +26,7 @@
 \thispagestyle{empty}
 
 \begin{abstract}
-	\noindent Het rekenen met expressies is belangrijk voor het uitvoeren van ingewikkelde berekeningen. Hiervoor kan gebruik gemaakt worden van expressiebomen. Dit is een datastructuur om een expressie in op te slaan. We hebben de theorie hierachter onderzocht. Met behulp van het Shunting-yardalgoritme kan een string worden omgezet in een expressieboom. De Reverse Polish Notation is een manier om een expressie op een eenduidige manier zonder haakjes op te schrijven. Dit komt overeen met het in post-order doorlopen van de expressieboom. We hebben zelf een aantal klassen geschreven in Python die een implementatie zijn van expressiebomen. Voorbeelden van berekeningen die we hiermee kunnen uitvoeren zijn differentiatie, numerieke integratie, negatie, substitutie, evaluatie en versimpeling.\\
+	\noindent Het rekenen met expressies is belangrijk voor het uitvoeren van ingewikkelde berekeningen. Hiervoor kan gebruik gemaakt worden van expressiebomen. Dit is een datastructuur om een expressie in op te slaan. We hebben de theorie hierachter onderzocht. Met behulp van het Shunting-yardalgoritme kan een string worden omgezet in een expressieboom. De Reverse Polish Notation is een manier om een expressie op een eenduidige manier zonder haakjes op te schrijven. Dit komt overeen met het in post-order doorlopen van de expressieboom. We hebben zelf een aantal klassen geschreven in Python die een implementatie zijn van expressiebomen. Voorbeelden van berekeningen die we hiermee kunnen uitvoeren zijn differentiatie, numerieke integratie, negatie, substitutie van variabelen, evaluatie en versimpeling. Ook hebben wij een functionaliteit \texttt{solve} toegevoegd die voor eenvoudige expressies, bij voorbeeld lineaire expressies, nulpunten kan bepalen.\\
 \end{abstract}
 \begin{figure}[h]
 	\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,thick,main node/.style={circle,draw,font=\sffamily\Large\bfseries}]
@@ -81,7 +81,7 @@ Om dit idee te implementeren geven we elke operator een prioriteit.
 We geven $**$ prioriteit 1, $*$ en $/$ krijgen prioriteit 2 en $+$
 en $- $ krijgen prioriteit 3. De functie \texttt{op\_nummer} geeft
 ons de prioriteit van een operator. De functie \texttt{zoek\_op}
-geeft ons de prioriteit van de operator met laagste prioriteit die nog niet eerder ingesloten is door haakjes. Hiervoor gebruiken we de variabele \texttt{open}. De string die van de expressie wordt van links naar rechts doorlopen. Als we een '(' tegenkomen, wordt \texttt{open} met $1$ wordt opgehoogd wanneer we een ')' tegenkomen wordt \texttt{open} met 1 verlaagd. De operatoren die nog niet zijn ingesloten door haakjes zijn nu degenen die we tegenkomen terwijl \texttt{open} gelijk aan $0$ is. We zoeken nu degene hiervan met de laagste prioriteit.\\\\
+geeft ons de prioriteit van de operator met laagste prioriteit die nog niet eerder ingesloten is door haakjes. Hiervoor gebruiken we de variabele \texttt{open}. De string van de expressie wordt van links naar rechts doorlopen. Als we een '(' tegenkomen, wordt \texttt{open} met $1$ wordt opgehoogd wanneer we een ')' tegenkomen wordt \texttt{open} met 1 verlaagd. De operatoren die nog niet zijn ingesloten door haakjes zijn nu degenen die we tegenkomen terwijl \texttt{open} gelijk aan $0$ is. We zoeken nu degene hiervan met de laagste prioriteit.\\\\
 \textbf{Handleiding}\\
 Hieronder een voorbeeld van hoe de code gebruikt kan worden\\\\
 \texttt{>>> a = Expression.fromString('(1+x)*3*4')\\
@@ -189,9 +189,9 @@ Of twee expressiebomen dezelfde berekening voorstellen, kan getest worden door m
 
 \textbf{Handleiding}\\
 De methode \texttt{\_\_eq\_\_} kan toegepast worden op twee bomen die gemaakt zijn met de functie \texttt{fromString}. Bij voorbeeld: \\\\
-\texttt{>>> a = Expression.fromString('2 + 1')\\
-		>>> b = Expression.fromString('1 + 2')\\
-		>>> print(a==b)
+\texttt{>>> a = Expression.fromString('log(2) + 1*3')\\
+		>>> b = Expression.fromString('3*1 + log(2)')\\
+		>>> print(a==b)\\
 		True }
 
 \textbf{Beperkingen}\\
@@ -209,11 +209,11 @@ Hieronder volgen twee voorbeelden van hoe de methode \texttt{evaluate} kan worde
 		3 \\
 		>>> b = Expression.fromString('x+sin(pi)')\\
 		>>> print(b.evaluate(\{'x':1,'pi':math.pi\}))\\
-		1}\\
+		1.0000000000000002}\\
 
 Een paar voorbeelden van hoe \texttt{part\_evaluate} werkt: \\\\
 \texttt{>>> a = Expression.fromString('x+y')\\
-		>>> print(a.part\_evaluate({'x':1}))\\
+		>>> print(a.part\_evaluate(\{'x':1\}))\\
 		1+y \\
 		>>> b = Expression.fromString('log(x**y+2/z)')\\
 		>>> print(b.part\_evaluate())\\
@@ -242,7 +242,8 @@ Het schrijven van de code voor
 \item Negatie
 \item Een deel van \texttt{tokenize} voor het begrijpen van negatieve getallen in de input
 \end{itemize}
-en het schrijven van de overeenkomstige delen van verslag (met uitzondering van het stukje code in \texttt{tokenize}).
+en het schrijven van de overeenkomstige delen van verslag (met uitzondering van het stukje code in \texttt{tokenize}). Verder: Het ordenen en overzichtelijk maken van de code.
+
 
 
 \newpage	
