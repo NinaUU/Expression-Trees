@@ -345,6 +345,8 @@ class Expression():
             return CosNode(self.lhs)*self.lhs.derivative(x)
         if isinstance(self, CosNode):
             return -SinNode(self.lhs)*self.lhs.derivative(x)
+        if isinstance(self,TanNode):
+            return ((TanNode(self.lhs))**2 + 1)*self.lhs.derivative(x)
         if isinstance(self,LogNode):
             return self.lhs.derivative(x)/self.lhs
         if self.op_symbol == '+':  # The derivative of a sum is the sum of the derivatives
