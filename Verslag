@@ -153,7 +153,6 @@ We kunnen ook expressies integreren die meer dan \'e\'en variabele bevatten. Aan
 		>>> print(a.num\_integration(0,1,'x',1000,\{'y':1\}))\\
 		1.4995000000000005}
 		
-% Vanaf hier toevoegingen Nina:
 \subsubsection{Negatie}
 De overload \texttt{\_\_neg\_\_} voor negatie van expressiebomen werkt door de hele boom te vermenigvuldigen met $(-1)$. In feite wordt er dus een \texttt{BinaryNode} aangemaakt met als operator \texttt{*} en als linkertak $(-1)$ en rechtertak de oorspronkelijke boom.
 
@@ -179,22 +178,31 @@ De methode \texttt{\_\_eq\_\_} kan toegepast worden op twee bomen die gemaakt zi
 \textbf{Beperkingen}\\
 De code kan niet herkennen dat b.v. $-1+2$ en $2-1$ hetzelfde zijn. Dit zou lastig te implementeren zijn omdat je iets zou kunnen doen zoals: als \texttt{self.op\_symbol==’+’} en \texttt{other.op\_symbol==’-‘} (of andersom), kijk dan of de linkerkant van de ene boom gelijk is aan de negatie van de andere boom, en de rechterkant gelijk aan de linkerkant van de ander. Het probleem zit dan in de negatie. De negatie van een boom geeft $(-1)$ keer de oorspronkelijke boom, maar de code herkent de gelijkheid van $-1$ en $(-1)*1$ niet. Dit zou ge\"implementeerd kunnen worden, maar dit wordt ingewikkeld omdat 1 weer opgebouwd kan worden van bij voorbeeld $0+1$, dus moet ook de gelijkenis van $(-1)*(0+1)$ of nog grotere bomen herkend worden. Dit zou opgelost kunnen worden door een versimpeling hiervoor te implementeren.
 
-\subsubsection{Het numeriek uitrekenen van de expressie} % Nog iets schrijven over part_evaluate!!!
-Als men de numerieke waarde van een expressie zou willen berekenen, ofwel een expressie 'evalueren', dan zou dat kunnen met de methode \texttt{evaluate} van de klasse \texttt{Expression}. Deze methode neemt als input een dictionary die waarden toekent aan de variabelen van de expressie. Als er geen variabelen in de expressieboom zitten, dan hoeft er geen input gegeven te worden en gaat de code er vanuit dat er een lege dictionary \texttt{\{\}} wordt meegegeven. Ook maakt de methode gebruik van de ingebouwde functionaliteit \texttt{eval} van Python, die ook als input een dictionary moet krijgen voor onbekende variabelen. De methode \texttt{evaluate} loopt de expressieboom af totdat hij bij een knoop van het type \texttt{Constant}, \texttt{Variables}, \texttt{LogNode}, \texttt{SinNode}, \texttt{CosNode} of \texttt{TanNode} komt. Bij zo'n knoop berekent hij eevoudig de numerieke waarde. Voor een  \texttt{Constant} of \texttt{Variables} knoop houdt dat in het invullen van de waarde (voor variabelen uit de bijgevoegde dicionary gehaald) in \texttt{eval}. Voor een \texttt{LogNode}, \texttt{SinNode}, \texttt{CosNode} of \texttt{TanNode} staat een aparte \texttt{evaluate} methode in zijn eigen klasse. Vervolgens voegt de code de uitkomsten samen voor alle \texttt{BinaryNode}s van onder naar boven met behulp van \texttt{eval}. \\\\
-\newpage
+\subsubsection{Het numeriek uitrekenen van een expressie} 
+Als men de numerieke waarde van een expressie zou willen berekenen, ofwel een expressie 'evalueren', dan zou dat kunnen met de methode \texttt{evaluate} van de klasse \texttt{Expression}. Deze methode neemt als input een dictionary die waarden toekent aan de variabelen van de expressie. Als er geen variabelen in de expressieboom zitten, dan hoeft er geen input gegeven te worden en gaat de code er vanuit dat er een lege dictionary \texttt{\{\}} wordt meegegeven. Ook maakt de methode gebruik van de ingebouwde functionaliteit \texttt{eval} van Python, die ook als input een dictionary moet krijgen voor onbekende variabelen. De methode \texttt{evaluate} loopt de expressieboom af totdat hij bij een knoop van het type \texttt{Constant}, \texttt{Variables}, \texttt{LogNode}, \texttt{SinNode}, \texttt{CosNode} of \texttt{TanNode} komt. Bij zo'n knoop berekent hij eevoudig de numerieke waarde. Voor een  \texttt{Constant} of \texttt{Variables} knoop houdt dat in het invullen van de waarde (voor variabelen uit de bijgevoegde dicionary gehaald) in \texttt{eval}. Voor een \texttt{LogNode}, \texttt{SinNode}, \texttt{CosNode} of \texttt{TanNode} staat een aparte \texttt{evaluate} methode in zijn eigen klasse. Vervolgens voegt de code de uitkomsten samen voor alle \texttt{BinaryNode}s van onder naar boven met behulp van \texttt{eval}.\\
+Ook gedeeltelijke evaluatie wordt ondersteund. Dit kan uitgevoerd worden met de methode \texttt{part\_evaluate} die voortbouwt op de methode \texttt{evaluate}. Hiermee kunnen sommigen van de variabelen een waarde toegekend krijgen via de dictionary, en deze worden ingevuld, terwijl anderen onbepaald mogen blijven. Vervolgens worden gedeelten van de boom zonder onbepaalde variabelen vereenvoudigd. Als geen van de variabelen in de dictionary voorkomen, dan geeft \texttt{part\_evaluate} de oorspronkelijke expressieboom terug. Het idee van de code is dat er een nieuwe string \texttt{newstring} wordt aangemaakt waarin de gedeeltelijk uitgerekende expressie wordt opgeslagen. Voor een \texttt{BinaryNode} wordt recursief de functie \texttt{part\_evaluate} losgelaten op de linkerkant en rechterkant, en de uitkomst wordt toegevoegd aan de string met de operator van de \texttt{BinaryNode} ertussen. Een knoop van het type \texttt{Constant} wordt eenvoudigweg toegevoegd aan de string en een knoop van het type \texttt{Variables} ook, eventueel met de variabele vervangen door zijn waarde als deze bekend is uit de dictionary. Een \texttt{MonoNode} wordt toegevoegd als een knoop van hetzelfde type, maar met de expressie binnen de haakjes gedeeltelijk uitgewerkt, voor zo ver mogelijk. Uiteindelijk wordt er een nieuwe expressieboom gemaakt door middel van de methode \texttt{fromString} en met als input de string \texttt{newstring}. Als laatste wordt er voor gezorgd dat de boom zo vereenvoudigd mogelijk teruggegeven wordt.
+
 \textbf{Handleiding}\\
-Hieronder volgt een voorbeeld van hoe de methode \texttt{evaluate} kan worden toegepast op een expressieboom. Het is belangrijk om op te merken dat onze code alle input van het type \texttt{str} (strings) interpreteert als een variabele. Zo zal de waarde van een variabele \texttt{a}, aan welke in \texttt{\_\_main\_\_} een waarde is toegekend, niet herkend worden in de functie \texttt{evaluate}. De waarde zal opnieuw moeten worden meegegeven in de dictionary. 
+Hieronder volgen twee voorbeelden van hoe de methode \texttt{evaluate} kan worden toegepast op een expressieboom. Het is belangrijk om op te merken dat onze code alle input van het type \texttt{str} (strings) interpreteert als een variabele. Zo zal de waarde van een variabele \texttt{a}, aan welke in \texttt{\_\_main\_\_} een waarde is toegekend, niet herkend worden in de functie \texttt{evaluate}. De waarde zal opnieuw moeten worden meegegeven in de dictionary. \\ 
 
 \texttt{>>> a = Expression.fromString('2 + 1')\\
 		>>> print(a.evaluate())\\
 		3 \\
-		>>>b = Expression.fromString('x+sin(pi)')\\
-		>>> print(b.evaluate(\{'x':1,'pi':math.pi\})\\
-		1}		
+		>>> b = Expression.fromString('x+sin(pi)')\\
+		>>> print(b.evaluate(\{'x':1,'pi':math.pi\}))\\
+		1}\\
+
+Een paar voorbeelden van hoe \texttt{part\_evaluate} werkt: \\\\
+\texttt{>>> a = Expression.fromString('x+y')\\
+		>>> print(a.part\_evaluate({'x':1}))\\
+		1+y \\
+		>>> b = Expression.fromString('log(x**y+2/z)')\\
+		>>> print(b.part\_evaluate())\\
+		log(x**y+2/z)}\\	
 		
 \newpage
 \section{Conclusie en discussie}
-We hebben gezien dat we met behulp van het Shunting-yardalgoritme expressies kunnen omzetten in een expressieboom. Vervolgens kunnen we met de expressies gaan rekenen. We hebben een aantal klassen geschreven in Python en hiermee kunnen we al aardig wat verschillende berekeningen en operaties uitvoeren. Er zijn echter ook beperkingen aan onze code. Expressies zijn soms onnodig ingewikkeld. Vooral bij het resultaat van differeti\"eren is dit het geval. De methode \texttt{simplify} biedt hier een uitkomst, maar nog niet alle gevallen worden hiermee opgelost. Ook het vergelijken van bijvoorbeeld $-1+2$ met $2-1$ gaat nog niet helemaal goed. Verder zouden er nog meer functionaliteiten toegevoegd kunnen worden. Een voorbeeld is een methode die de primitieve van een expressie bepaalt.
+We hebben gezien dat we met behulp van het Shunting-yardalgoritme expressies kunnen omzetten in een expressieboom. Vervolgens kunnen we met de expressies gaan rekenen. We hebben een aantal klassen geschreven in Python en hiermee kunnen we al aardig wat verschillende berekeningen en operaties uitvoeren. Er zijn echter ook beperkingen aan onze code. Expressies zijn soms onnodig ingewikkeld. Vooral bij het resultaat van differenti\"eren is dit het geval. De methode \texttt{simplify} biedt hier een uitkomst, maar nog niet alle gevallen worden hiermee opgelost. Ook het vergelijken van bijvoorbeeld $-1+2$ met $2-1$ gaat nog niet helemaal goed. Verder zouden er nog meer functionaliteiten toegevoegd kunnen worden. Een voorbeeld is een methode die de primitieve van een expressie bepaalt.
 
 \section{Taakverdeling}
 We hebben de taken als volgt verdeeld:\\\\
@@ -206,6 +214,15 @@ Het schrijven van de code voor
 \item Numerieke integratie
 \end{itemize}
 en het schrijven van de overeenkomstige delen van verslag en de introductie.
+
+\textbf{Nina}\\
+Het schrijven van de code voor
+\begin{itemize}
+\item Overload van de gelijkheidsoperator
+\item Het berekenen van de numerieke waarde van een expressie (\texttt{evaluate} en \texttt{part\_evaluate})
+\item Negatie
+\end{itemize}
+en het schrijven van de overeenkomstige delen van verslag.
 
 \newpage	
 \begin{thebibliography}{1}	
