@@ -14,6 +14,8 @@
 }
 \usepackage{tikz}
 \usetikzlibrary{arrows}
+\usepackage{titling}
+\setlength{\droptitle}{-10em} 
 
 \title{Expressiebomen}
 \subtitle{Programmeren in de Wiskunde}
@@ -24,7 +26,7 @@
 \thispagestyle{empty}
 
 \begin{abstract}
-	Wat we willen doen in het verslag
+	\noindent Het rekenen met expressies is belangrijk voor het uitvoeren van ingewikkelde berekeningen. Hiervoor kan gebruik gemaakt worden van expressiebomen. Dit is een datastructuur om een expressie in op te slaan. We hebben de theorie hierachter onderzocht. Met behulp van het Shunting-yardalgoritme kan een string worden omgezet in een expressieboom. De Reverse Polish Notation is een manier om een expressie op een eenduidige manier zonder haakjes op te schrijven. Dit komt overeen met het in post-order doorlopen van de expressieboom. We hebben zelf een aantal klassen geschreven in Python die een implementatie zijn van expressiebomen. Voorbeelden van berekeningen die we hiermee kunnen uitvoeren zijn differentiatie, numerieke integratie, negatie, substitutie, evaluatie en versimpeling.\\
 \end{abstract}
 \begin{figure}[h]
 	\begin{tikzpicture}[->,>=stealth',shorten >=1pt,auto,node distance=3cm,thick,main node/.style={circle,draw,font=\sffamily\Large\bfseries}]
@@ -122,6 +124,7 @@ Ons programma bevat de functionaliteit differenti\"eren. Hierbij wordt een expre
 	\item $(f^k)' = k*f^{k-1}*f'$
 	\item $\left(\sin(f)\right)' = \cos(f)*f'$
 	\item $\left(\cos(f)\right)' = -\sin(f)*f'$
+	\item $\left(\tan(f)\right)' = (\tan^2(f)+1)*f'$
 	\item $\left(\log(f)\right)' = \frac{f'}{f}$
 	\item $(f^g)' = f^{g}\left[g'\log(f) + g\frac{f'}{f}\right]$
 \end{itemize}
@@ -151,7 +154,23 @@ We kunnen deze functionaliteit aanroepen met \texttt{f.num\_integration(a,b,'x',
 We kunnen ook expressies integreren die meer dan \'e\'en variabele bevatten. Aan de andere variabelen moet dan via een dictionary een waarde worden toegekend. Hieronder zien we hoe dat in zijn werk gaat.\\
 \texttt{>>> a = Expression.fromString('x+y')\\
 		>>> print(a.num\_integration(0,1,'x',1000,\{'y':1\}))\\
-		1.4995000000000005}
+		1.4995000000000005}\\\\
+\textbf{Complexiteit}\\
+We hebben de complexiteit bepaald van de methode \texttt{num\_integration}. Hiervoor hebben we de methode toegepast op de integraal\\ $\int_{0}^{1}3x^2+4x+1 \text{d}x$ voor verschillende waarden van $n$. In onderstaande tabel zijn voor verschillende $n$ de tijd en de fout in het antwoord te zien. Het exacte antwoord is $4$ dus we hebben de fout gedefineerd als het absolute verschil met 4. Voor elke $n$ hebben we $10$ keer de meting uitgevoerd en hiervan het gemiddelde genomen.
+\begin{table}[h]
+	\centering
+	\begin{tabular}{r|c|c}
+	n&T (sec.)&fout\\ \hline
+	$1$&$1.9 \cdot 10^{-3}$&$3$\\
+	$10$&$3.9 \cdot 10^{-3}$&$0.34$\\
+	$100$&$2.3 \cdot 10^{-2}$&$3.5 \cdot 10^{-2}$\\
+	$1000$&$0.21$&$3.5 \cdot 10^{-3}$\\
+	$10.000$&$2.0$&$3.5 \cdot 10^{-4}$\\
+	$100.000$&$21$&$3.5 \cdot 10^{-5}$\\
+	\end{tabular}
+	\label{hai}
+\end{table}
+We zien dat de complexiteit van $\mathcal{O}(n)$ is. Dit lijkt logisch aangezien we voor elk punt dat we toevoegen de expressie moeten evalueren, het resultaat hiervan moet vermenigvuldigen met $\Delta x$ en $x_i$ moeten ophogen. Het aantal operaties schaalt dus lineair met het aantal punten. We zien dat ook de fout daalt met $\mathcal{O}(n)$.
 		
 \subsubsection{Negatie}
 De overload \texttt{\_\_neg\_\_} voor negatie van expressiebomen werkt door de hele boom te vermenigvuldigen met $(-1)$. In feite wordt er dus een \texttt{BinaryNode} aangemaakt met als operator \texttt{*} en als linkertak $(-1)$ en rechtertak de oorspronkelijke boom.
@@ -213,7 +232,7 @@ Het schrijven van de code voor
 \item Differentiatie
 \item Numerieke integratie
 \end{itemize}
-en het schrijven van de overeenkomstige delen van verslag en de introductie.
+en het schrijven van de overeenkomstige delen van verslag. Verder de samenvatting, inleiding en conclusie/discussie.
 
 \textbf{Nina}\\
 Het schrijven van de code voor
