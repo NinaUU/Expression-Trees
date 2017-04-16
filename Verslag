@@ -74,9 +74,9 @@ Het rekenen met expressies is belangrijk voor het uitvoeren van ingewikkelde ber
 In dit deel zullen we de verschillende berekeningen die onze code kan uitvoeren uitleggen. Bij elke functionaliteit geven we ook een korte handleiding voor het gebruik hiervan.
 
 \subsubsection{Het vertalen van een expressie naar een string}
-Een expressie kan worden omgezet naar een string. Dit gebeurt in de methode \texttt{\_\_str\_\_} in de klasse \texttt{BinaryNode}. Het maken van de string gebeurt op een recursieve manier. Er wordt telkens de \texttt{str}-methode aangeroepen van het linker- en het rechterkind. Deze roepen op hun beurt weer de \texttt{str}-methode aan van hun kinderen, enz. Wanneer een kind een \texttt{Constant} of een \texttt{Variable} is, zorgen de \texttt{str}-methoden van die klassen ervoor dat de juiste waarde als string wordt teruggegeven. Op die manier wordt de gehele string opgebouwd. \\
-We hebben ervoor gezorgd dat er alleen maar haakjes worden geplaatst wanneer dit echt nodig is. Wanneer de volgorde waarin de operaties moeten worden uitgevoerd al volgen uit de prioriteit van de operatoren, kunnen haakjes worden weggelaten. Bijvoorbeeld bij de expressie $(2+3)*4$ zijn haakjes nodig maar bij $2+(3*4)$ kunnen ze worden weggelaten. Bij het implementeren hiervan gaat we uit van het volgende idee: wanneer er de binaire boom in een kind van een operator een operator voorkomt die een lagere prioriteit heeft, en deze is nog niet eerder ingesloten door haakjes, dan moeten er haakjes worden geplaatst.  \\
-In afbeelding \ref{haakjesboom} zien we de boom die hoort bij $(2+3)*4*5$. Voor het onderste $*$-teken geldt dat er in zijn linkerkind een operator staat met lagere prioriteit: het $+$-teken. Om $2+3$ moeten dus haakjes worden geplaatst. Voor het bovenste $*$-teken geldt ook dat er in zijn linkerkind een $*$-teken voorkomt, maar dit is al eerder ingesloten door haakjes. Het is dus niet nodig om haakjes te plaatsen om $(2+3)*4$.\\
+Een expressie kan worden omgezet naar een string. Dit gebeurt in de methode \texttt{\_\_str\_\_} in de klasse \texttt{BinaryNode}. Het maken van de string gebeurt op een recursieve manier. Er wordt telkens de \texttt{str}-methode aangeroepen van het linker- en het rechterkind. Deze roepen op hun beurt weer de \texttt{str}-methode aan van hun kinderen, enz. Wanneer een kind een \texttt{Constant} of een \texttt{Variables} is, zorgen de \texttt{str}-methoden van die klassen ervoor dat de juiste waarde als string wordt teruggegeven. Op die manier wordt de gehele string opgebouwd. \\
+We hebben ervoor gezorgd dat er alleen maar haakjes worden geplaatst wanneer dit echt nodig is. Wanneer de volgorde waarin de operaties moeten worden uitgevoerd al volgt uit de prioriteit van de operatoren, kunnen haakjes worden weggelaten. Bijvoorbeeld bij de expressie $(2+3)*4$ zijn haakjes nodig maar bij $2+(3*4)$ kunnen ze worden weggelaten. Bij het implementeren hiervan gaat we uit van het volgende idee: wanneer er in de binaire boom in een kind van een operator een operator voorkomt die een lagere prioriteit heeft, en deze is nog niet eerder ingesloten door haakjes, dan moeten er haakjes worden geplaatst.  \\
+Een voorbeeld zien we in afbeelding \ref{haakjesboom}. Dit is de boom die hoort bij $(2+3)*4*5$. Voor het onderste $*$-teken geldt dat er in zijn linkerkind een operator staat met lagere prioriteit: het $+$-teken. Om $2+3$ moeten dus haakjes worden geplaatst. Voor het bovenste $*$-teken geldt ook dat er in zijn linkerkind een $*$-teken voorkomt, maar dit is al eerder ingesloten door haakjes. Het is dus niet nodig om haakjes te plaatsen om $(2+3)*4$.\\
 Om dit idee te implementeren geven we elke operator een prioriteit.
 We geven $**$ prioriteit 1, $*$ en $/$ krijgen prioriteit 2 en $+$
 en $- $ krijgen prioriteit 3. De functie \texttt{op\_nummer} geeft
@@ -84,7 +84,7 @@ ons de prioriteit van een operator. De functie \texttt{zoek\_op}
 geeft ons de prioriteit van de operator met laagste prioriteit die nog niet eerder ingesloten is door haakjes. Hiervoor gebruiken we de variabele \texttt{open}. De string van de expressie wordt van links naar rechts doorlopen. Als we een '(' tegenkomen, wordt \texttt{open} met $1$ wordt opgehoogd wanneer we een ')' tegenkomen wordt \texttt{open} met 1 verlaagd. De operatoren die nog niet zijn ingesloten door haakjes zijn nu degenen die we tegenkomen terwijl \texttt{open} gelijk aan $0$ is. We zoeken nu degene hiervan met de laagste prioriteit.\\\\
 \textbf{Handleiding}\\
 Hieronder een voorbeeld van hoe de code gebruikt kan worden\\\\
-\texttt{>>> a = Expression.fromString('(1+x)*3*4')\\
+\texttt{>>> a = Expression.fromString('((1+x)*3)*4')\\
 		>>> print(a)\\
 		(1 + x) * 3 * 4}
 
@@ -141,13 +141,13 @@ De methode \texttt{derivative} heeft als input de expressie en de variabele waar
 De afgeleide die we krijgen is vaak onnodig ingewikkeld, zoals in het voorbeeld te zien is. Daarom wordt aangeraden om na het nemen van de afgeleiden de methode \texttt{simplify} toe te passen.
 
 \subsubsection{Numerieke integratie}
-De klasse \texttt{Expression} bevat de methode \texttt{num\_integration} waarmee we een expressie numeriek kunnen integreren. Hiervoor gebruiken we een Riemannsom. Stel dat we voor een bepaalde expresse $f$ die afhangt van $x$ willen bepalen
+De klasse \texttt{Expression} bevat de methode \texttt{num\_integration} waarmee we een expressie numeriek kunnen integreren. Hiervoor gebruiken we een Riemannsom. Stel dat we voor een bepaalde expressie $f$ die afhangt van $x$ willen bepalen
 $$I = \int_{a}^{b}f(x)\text{d}x$$ 
 We delen het interval $[a,b]$ op in $n$ delen van breedte $\Delta x = \frac{b-a}{n}$. Hierdoor ontstaan er $n+1$ punten $x_i =i\left(\frac{b-a}{n}\right)+a$ met $i =0,1,...,n$. We benaderen de integraal met
 $$I \approx \sum_{i=0}^{n-1}f(x_i)\Delta x$$\\\\
 \newpage
 \textbf{Handleiding}\\
-We kunnen deze functionaliteit aanroepen met \texttt{f.num\_integration(a,b,'x',n)}. We kunnen dus kiezen in hoeveel punten we het interval willen verdelen. Meer punten zal leiden tot een kleinere fout in het antwoord maar dit kost wel een langere rekentijd. In onderstaande voorbeeld bepalen we $\int_{0}^{1}(x^2+1)\text{d}x$ met 10000 punten. Het exacte antwoord is $\frac{4}{3}$ dus de fout is ongeveer $5\cdot 10^{-5}$.\\\\
+We kunnen deze functionaliteit aanroepen met \texttt{f.num\_integration(a,b,'x',n)}. We kunnen dus kiezen in hoeveel punten we het interval willen verdelen. Meer punten zal leiden tot een kleinere fout in het antwoord maar dit kost wel een langere rekentijd. In het onderstaande voorbeeld bepalen we $\int_{0}^{1}(x^2+1)\text{d}x$ met 10000 punten. Het exacte antwoord is $\frac{4}{3}$ dus de fout is ongeveer $5\cdot 10^{-5}$.\\\\
 \texttt{>>> a = Expression.fromString('x**2 + 1')\\
 		>>> print(a.num\_integration(0,1,'x',10000))\\
 		1.3332833349999427}\\\\
@@ -232,7 +232,7 @@ Het schrijven van de code voor
 \item Differentiatie
 \item Numerieke integratie
 \end{itemize}
-en het schrijven van de overeenkomstige delen van verslag. Verder de samenvatting, inleiding en conclusie/discussie.
+en het schrijven van de overeenkomstige delen van verslag. Verder: de samenvatting, inleiding en conclusie/discussie.
 
 \textbf{Nina}\\
 Het schrijven van de code voor
