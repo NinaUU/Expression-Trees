@@ -1,12 +1,8 @@
 import math
 
-
-# split a string into mathematical tokens
-# returns a list of numbers, operators, parantheses and commas
-# output will not contain spaces
-
-
 def tokenize(string):
+    """ A function that splits a string into mathematical tokens. Returns a list of numbers, operators, parantheses and commas.
+        Output will not contain spaces. """
     splitchars = list("+-*/(),")
 
     # surround any splitchar by spaces
@@ -32,10 +28,9 @@ def tokenize(string):
     # if input string starts with a minus (special casing for **):
     if ans[0] == '-':
         if len(ans) == 2:
-            a = ans.pop(0)
-            b = ans.pop(
-                0)  # 0th element was previously 1st element but since element 0 has been removed, element 1 has become the new 0th element
-            ans = [str(a) + str(b)] + ans
+            a = ans.pop(0) # remove the first two elements of ans
+            b = ans.pop(0)  
+            ans = [str(a) + str(b)] + ans # merge the two removed elements into one
         elif len(ans) > 2:
             if ans[2] != '**':
                 a = ans.pop(0)
@@ -43,12 +38,12 @@ def tokenize(string):
                 ans = [str(a) + str(b)] + ans
             else:
                 ans = [0] + ans
-    # if minus sign is encountered straight after another operator (special casing for **):
+    # if minus sign is encountered right after another operator (special casing for **):
     for i in range(1, len(ans) - 1):
         if ans[i] == '-' and ans[i - 1] in ['+', '-', '*', '/', '**', '(']:
             if len(ans) <= i + 2:
-                a = ans.pop(i)
-                b = ans.pop(i)  # ith element was previously (i+1)th element
+                a = ans.pop(i)  
+                b = ans.pop(i)  
                 ans.insert(i, str(a) + str(b))
             elif len(ans) > i + 2:
                 if ans[i + 2] != '**':
@@ -58,9 +53,7 @@ def tokenize(string):
     return ans
 
 
-# check if a string represents a numeric value
-
-
+# check if a string represents a numeric value:
 def isnumber(string):
     try:
         float(string)
@@ -68,10 +61,7 @@ def isnumber(string):
     except ValueError:
         return False
 
-
-# check if a string represents an integer value
-
-
+# check if a string represents an integer value:
 def isint(string):
     try:
         int(string)
@@ -91,8 +81,8 @@ def op_nummer(op):
         return 3
 
 
-# geeft de prioriteit terug van de operator met laagste priorieit
-# (dus hoogste getal) die nog niet ingesloten in door haakjes
+# returns the priority of the operator with the lowest priority
+# (highest number) that is not yet surrounded by brackets
 def zoek_op(st):
     open = 0
     result = 1
@@ -109,16 +99,7 @@ def zoek_op(st):
 
 
 class Expression():
-    """A mathematical expression, represented as an expression tree"""
-
-    """
-    Any concrete subclass of Expression should have these methods:
-     - __str__(): return a string representation of the Expression.
-     - __eq__(other): tree-equality, check if other represents the same expression tree.
-    """
-
-    # TODO: when adding new methods that should be supported by all
-    # subclasses, add them to this list
+    """ A mathematical expression, represented as an expression tree. """
 
     # operator overloading:
     # this allows us to perform 'arithmetic' with expressions, and obtain
@@ -154,19 +135,18 @@ class Expression():
     def tan(self):
         return TanNode(self)
 
-    # basic Shunting-yard algorithm
-    def fromString(string):  # van een string (infix) naar expressieboom
+    def fromString(string):
+        """ A function that takes a string as input and returns an expression tree, implementing the Shunting-yard algorithm. """
         # split into tokens
         tokens = tokenize(string)
-
-        # stack used by the Shunting-Yard algorithm
+        # stack used by the Shunting-yard algorithm
         stack = []
         # output of the algorithm: a list representing the formula in RPN
-        # this will contain Constant's and '+'s
+        # this will contain Constants, Variables, operators, functions and parantheses
         output = []
-        # list of operators, op volgoder van miste naar meeste voorrang
+        # list of operators, ordered from lowest to highest priority
         oplist = ['+', '-', '*', '/', '**']
-        precidence = {'+': 0, '-': 1, '*': 2, '/': 2, '**': 3}
+        precedence = {'+': 0, '-': 1, '*': 2, '/': 2, '**': 3}
         functionlist = ['log', 'sin', 'tan', 'cos']
 
         for token in tokens:
@@ -182,13 +162,12 @@ class Expression():
                 while True:
                     if len(stack) == 0 or stack[-1] not in oplist:
                         break
-                    if precidence[token] > precidence[stack[-1]]:
+                    if precedence[token] > precedence[stack[-1]]:
                         break
                     output.append(stack.pop())
                 # push the new operator onto the stack
                 stack.append(token)
             elif token in functionlist:
-                # TODO: wat is de voorrang van log, Sin, ect
                 stack.append(token)
             elif token == '(':
                 # left parantheses go to the stack
@@ -220,21 +199,23 @@ class Expression():
                 # what to do
                 y = stack.pop()
                 x = stack.pop()
-                # combineer node met x en node met y met ouder node operator
+                # combine node containing variable x and node containing variable y with parent node (operator)
                 stack.append(eval('x %s y' % t))
             elif t in functionlist:
                 x = stack.pop()
                 stack.append(eval('Expression.%s(x)' % t))
             else:
-                # a constant, push it to the stack ## of variabele
+                # a constant or variable, push it to the stack
                 stack.append(t)
         # the resulting expression tree is what's left on the stack
         return stack[0]
 
-    def __eq__(self, other):
+    
+    def __eq__(self, other): 
+        """ Overload of the equality operator, ==. Checks if two expression trees are equal.
+            Includes casing for the subclasses, which no longer have their own overload functions. """
         op_commutative = ['+', '*']  # list of commutative operators
-        # list of operators that are not commutative
-        n_op_commutative = ['-', '/', '**']
+        n_op_commutative = ['-', '/', '**']  # list of operators that are not commutative
         # recursive code since there are more nodes below that also need to be
         # compared
         if isinstance(self, BinaryNode) and isinstance(other, BinaryNode):
@@ -244,8 +225,7 @@ class Expression():
             if self.op_symbol in n_op_commutative:
                 return self.lhs.__eq__(other.lhs) and self.rhs.__eq__(other.rhs)
             elif self.op_symbol in op_commutative:
-                return (self.lhs.__eq__(other.lhs) and self.rhs.__eq__(other.rhs)) or (
-                self.lhs.__eq__(other.rhs) and self.rhs.__eq__(other.lhs))
+                return (self.lhs.__eq__(other.lhs) and self.rhs.__eq__(other.rhs)) or (self.lhs.__eq__(other.rhs) and self.rhs.__eq__(other.lhs))
         elif isinstance(self, MonoNode) and isinstance(other, MonoNode):
             return type(self) == type(other) and self.lhs.__eq__(other.lhs)
         # only one execution since Constants only occur in leaves:
@@ -255,43 +235,44 @@ class Expression():
             return self.value == other.value
         else:  # if the types are not the same, the nodes cannot be compared
             return False
-
+        
     def evaluate(self, dictionary={}):
         """ A function that calculates the numerical value of an expression.
-            dictionary = a dictionary assigning values to the variables """
+            dictionary is a dictionary assigning values to the variables, if not specified: empty dictionary. """
         if isinstance(self, BinaryNode):  # recursive loop until no more operators are encountered
             return eval(str(self.lhs.evaluate(dictionary)) + self.op_symbol + str(self.rhs.evaluate(dictionary)))
         # no more operators encountered means that the next nodes are constants or variables or a combination
         return eval(str(self.value), dictionary)
 
     def part_evaluate(self, dictionary={}):
-        newstring = ''
-        if isinstance(self, BinaryNode):
+        """ A function that can partially evaluate an expression. 
+            dictionary = a dictionary that may assign values to none, some or all of the variables. """
+        newstring = '' # string in which new expression is saved
+        if isinstance(self, BinaryNode): # recursive code for walking down the tree
             newstring += str(self.lhs.part_evaluate(dictionary)) + self.op_symbol + str(
                 self.rhs.part_evaluate(dictionary))
         if isinstance(self, Variables):
             if str(self.value) not in dictionary:
-                newstring += self.value
+                newstring += self.value # leave variable unchanged
             else:
-                newstring += str(eval(self.value, dictionary))
+                newstring += str(eval(self.value, dictionary)) # substitute value for variable
         if isinstance(self, Constant):
             newstring += str(self.value)
-        if isinstance(self, MonoNode):
+        if isinstance(self, MonoNode): # recursive code for evaluating the argument/input of the function
             newstring += self.op_symbol + '(' + str(self.lhs.part_evaluate(dictionary)) + ')'
-        tree = Expression.fromString(newstring)
+        tree = Expression.fromString(newstring) # make a new tree that is partially evaluated
         try:
-            return tree.evaluate()
+            return tree.evaluate() # simplify if possible
         except NameError:
             return tree
 
     def __neg__(self):
+        """ A function that returns the negative of an expression tree and overloads the - that is placed in front of an expression tree """
         return Expression.fromString('(-1)*(' + str(self) + ')')
 
     def simplify(self):
         """ A function that simplifies a function by using standard rules.
-        It modefies the expression, so later on te symplified expression is used."""
-        # TODO: a(b+c)= ab + ac, sin2 + con2 = 1,
-        # ax+bx = (a+b)x,
+        It modifies the expression, so later on the simplified expression is used."""
         if isinstance(self, BinaryNode):
             self.lhs = self.lhs.simplify()
             self.rhs = self.rhs.simplify()
@@ -330,10 +311,11 @@ class Expression():
                     if self.lhs == Constant(0):
                         self = Constant(1)
             elif isinstance(self, Constant) or isinstance(self, Variables):
-                return self  # einde van de boom
+                return self  # end of tree
         return self
 
-    def derivative(self, x):  # returns the derivative of the expression with respect to x
+    def derivative(self, x): 
+        """ A function that returns the derivative of an expession with respect to x """
         if isinstance(self, Constant):  # The derivative of a constant is 0
             return Constant(0)
         if isinstance(self, Variables):
@@ -360,13 +342,14 @@ class Expression():
         # The power rule
         if self.op_symbol == '**' and isinstance(self.rhs, Constant):
             return self.rhs * self.lhs ** (self.rhs.value - 1) * self.lhs.derivative(x)
-        if self.op_symbol == '**': #Logaritmisch differentiëren
+        if self.op_symbol == '**': #Logarithmic differentiation
             return self * (self.rhs.derivative(x)*LogNode(self.lhs) +
                     self.lhs.derivative(x)*self.rhs/self.lhs)
 
-    def solve(self, x, y=0, x0=0, toletance=10 ** (-5), n=1000):
-        """A function that finds the root of a Expression by using the Netwon alogaritm.
-        To prefent endless loops, the maximal itterations has been set"""
+    def solve(self, x, y=0, x0=0, tolerance=10 ** (-5), n=1000):
+        """A function that finds the root of an expression by using the Newton algorithm.
+           Input x should be a string of the variable for which the expression should be solved.
+           To prevent endless loops, a maximum number of iterations has been set. """
         div = Expression.derivative(self, x).simplify()
         xm = x0 - (self.evaluate({x: x0})) / (div.evaluate({x: x0}))
         if n != None:
@@ -375,21 +358,23 @@ class Expression():
                 ym = self.evaluate({x: xm})
                 xn = xm - ym / (div.evaluate({x: xm}))
                 xm = xn
-                if abs(ym) < toletance:
+                if abs(ym) < tolerance:
                     return xm
         else:
             while True:
                 ym = self.evaluate({x: xm})
                 xn = xm - ym / (div.evaluate({x: xm}))
                 xm = xn
-                if abs(ym) < toletance:
+                if abs(ym) < tolerance:
                     return xm
-        raise ValueError('Did not find a root of %s within %s itterations whit x0 = %s and toletance = %s' % self, n,
-                         x0, toletance)
-
-    def num_integration(self, a, b, x, n,dict={}):  # approximates the integral of the expression with resprect to x between a and b with a riemann sum
+        raise ValueError('Did not find a root of %s within %s itterations whit x0 = %s and tolerance = %s' % self, n,
+                         x0, tolerance)
+    
+    def num_integration(self, a, b, x, n,dict={}):  
+        """ A function that approximates the integral of the expression with respect to x between a and b with a Riemann sum
+            n is the number of pieces into which the interval is divided """
         s = self.part_evaluate(dict)
-        n = n  # number of steps
+        n = n  
         xi = a
         dx = (b - a) / (n)
         result = 0
@@ -417,7 +402,7 @@ class Constant(Expression):
 
 
 class Variables(Expression):
-    """Reprecenteerd een variabele"""
+    """Represents a variable"""
 
     def __init__(self, value):
         self.value = value
@@ -434,17 +419,12 @@ class BinaryNode(Expression):
         self.rhs = rhs
         self.op_symbol = op_symbol
 
-    # TODO: what other properties could you need? Precedence, associativity,
-    # identity, etc.
-
     def __str__(self):
         lstring = str(self.lhs)
         rstring = str(self.rhs)
-
-        # TODO: do we always need parantheses?
-        # Haakjes zijn alleen nodig wanneer er in de uitdrukking links of rechts van de operator een
-        # andere operator voorkomt die een lagere prioriteit heeft.
-        # Onderstaande code checkt of dit het geval is
+        
+        # Parantheses are only needed when an operator of lower priority occurs to the left or to the right of an operator
+        # Checks whether this is the case
         if zoek_op(lstring) > op_nummer(self.op_symbol) and zoek_op(rstring) <= op_nummer(self.op_symbol):
             return "(%s) %s %s" % (lstring, self.op_symbol, rstring)
         if zoek_op(lstring) <= op_nummer(self.op_symbol) and zoek_op(rstring) > op_nummer(self.op_symbol):
@@ -490,7 +470,7 @@ class PowNode(BinaryNode):
 
 
 class MonoNode(Expression):
-    """ Een node variand voor functies die een variabele vragen, zoals sin of log."""
+    """ A node for functions that request a single argument/input, such as sin or log. """
 
     def __init__(self, lhs, op_symbol):
         self.lhs = lhs
@@ -500,11 +480,9 @@ class MonoNode(Expression):
         lstring = str(self.lhs)
         return "%s(%s)" % (self.op_symbol, lstring)
 
-        # TODO Haakjes weg werken?
-
 
 class LogNode(MonoNode):
-    """Representeert de log functie"""
+    """Represents the logarithmic function (base e)"""
 
     def __init__(self, lhs):
         super(LogNode, self).__init__(lhs, "log")
@@ -515,7 +493,7 @@ class LogNode(MonoNode):
 
 
 class SinNode(MonoNode):
-    """Representeert de sinus functie"""
+    """Represents the sine function"""
 
     def __init__(self, lhs):
         super(SinNode, self).__init__(lhs, "sin")
@@ -526,7 +504,7 @@ class SinNode(MonoNode):
 
 
 class CosNode(MonoNode):
-    """Representeert de cosinus functie"""
+    """Represents the cosine function"""
 
     def __init__(self, lhs):
         super(CosNode, self).__init__(lhs, "cos")
@@ -537,7 +515,7 @@ class CosNode(MonoNode):
 
 
 class TanNode(MonoNode):
-    """Representeert de tangus functie"""
+    """Represents the tangent function"""
 
     def __init__(self, lhs):
         super(TanNode, self).__init__(lhs, "tan")
