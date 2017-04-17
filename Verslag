@@ -63,15 +63,43 @@
 Het rekenen met expressies is belangrijk voor het uitvoeren van ingewikkelde berekeningen. Een voorbeeld van een expressie is $(x+1)^3 + 3^2+ 6\sin(y)$. In een expressie komen getallen, variabelen en operatoren voor. Dit kunnen zowel binaire operatoren (zoals $+$ en $*$) als unaire operatoren (zoals $\sin$ en $\log$) zijn. Een voorbeeld van een programma dat kan rekenen met expressies is \textbf{Wolfram Mathematica}. Dit programma gebruikt hiervoor zogenaamde \textit{expressiebomen}. Dit is een datastructuur waarin de expressies worden opgeslagen. In dit verslag zullen we de theorie hierachter behandelen. Hierbij zullen we ook \textit{Reverse Polish Notation} (RPN) behandelen. Dit is een manier om een expressie op een eenduidige manier zonder haakjes weer te geven. Ook het \textit{Shunting-yardalgoritme} komt aan bod. Dit is een algoritme om een string om te zetten in een expressieboom. We hebben zelf in Python een aantal klassen geschreven die een implementatie zijn van expressiebomen. Voorbeelden van berekeningen die we hiermee kunnen doen zijn: het opslaan van een expresssie, waarden substitueren, het uitrekenen van een expressie, het combineren van twee expressies, negatie, versimpeling, differentiatie en integratie. In het gedeelte \textit{Theorie} zullen we de werking van expressiebomen, RPN en het Shunting-yardalgoritme uitleggen. In het deel \textit{Implementatie} leggen we uit hoe we de theorie hebben ge\"implementeerd in onze eigen code. We zullen de verschillende functionaliteiten uitleggen en een korte handleiding geven voor het gebruik van de code. In het gedeelte \textit{Conclusie en discussie} bespreken we de beperkingen van onze code.
 \newpage
 \section{Theorie}
-% RPN postfix 
-% ShutingYardt
+De methodes die we geschreven hebben maken gebruik van de binaire boom structuur van expressie bomen. Een expressie boom heeft als knopen operatoren en constanten of variabelen als bladeren. Een eenvoudige expressie is bij voorbeeld $5+6$, de binaire operator $+$ is de stam en heeft als kinderen 5 en 6. Een operator mag ook een andere operator als kind hebben, zo zou in ons voorbeeld de operator $+$ ook de operator $*$ als rechterkind kunnen hebben. De $*$ knoop heeft dan ook twee kinderen, bijvoorbeeld 2 en 3. Om een geldige uitdrukking te zijn moeten de bladeren in de boom altijd een waarde representeren, dit mag ook een variabele zijn.
 
-% Hoe de boom werkt
+De boom wordt vanaf de bladderen gelezen, een of twee waarden worden door de bovenliggende knoop omgezet naar een nieuwe waarde en deze opnieuw met de bovenliggende totdat de stam van de boom bereikt is. Het volgt nu ook eenvoudig dat er geen haakjes nodig zijn, of een afspraak over de volgorde van links of rechts: een knoop heeft alleen interactie met zijn ouders of kinderen en waar een operator niet associatief is, zoals bij machtsverheffen, is dit in de knoop zelf verwerkt.
+
+
+De methode \texttt{fromString} zet een expressie om in een expressie boom. Om dit te doen maakt het gebruik van postfix notatie en het shunting yard allogaritme. 
+Postfix notatie ook wel `reversed Poolish notation', RPN, is een andere volgorde van het schrijven van een expressie. Hierbij worden de operatoren achter de waarden geschreven. Zo wordt $2+3$ in RPN geschreven als $2\ 3\ +$. Bij deze notatie is het van belang dat van te voren precies duidelijk is hoeveel argumenten een operator vraagt.
+Bij de methode zijn geen haakjes nodig, bij de standaard infix schrijfwijze betekend $(4+5)*3$ is anders dan $4+5*3$ omdat we hebben afgesproken dat vermenigvuldigen voor optellen komt. RPN werkt op de volgende manier: \\
+Bekijkt $4\ 5\ 3\ +\ *$. De eerste operator die we tegen komen is de plus, we kijken nu naar de eerste twee waardes, want plus neemt twee waardes. Dit zijn 4 en 5, die tellen we op tot 9. De volgende operator die we tegen komen is keer, ook deze neemt twee waardes, de waardes die nu vooraan staan zijn 9 en 3, deze vermenigvuldigen we. Deze expressie komt dus overeen met $(4+5)*3$. Merk op dat $4\ 5\ +\ 3\ *$ het zelfde is omdat we precies de zelfde stappen kunnen volgen. Het is dus niet nodig om alle operatoren achter aan te hebben staan.
+
+Een alogaritme om infix notatie om te zetten in postfix is het shunting yard algoritme. Deze methode werkt met behulp van een stack voor operatoren. Het begint met lezen van de expresie aan de linkerkant. Aan de hand van de volgende stappen wordt de uitkomt van links naar rechts opgebouwd.
+    \begin{itemize}
+        \item Een getal komt op de uitkomst,
+        \item Een functie komt op de uitkomst,
+        \item Bij een operator $o$ wordt gekeken naar de stack:
+        \begin{itemize}
+            \item zolang de stack niet leeg is en de eerste operator op de stack heeft een lagere voorgang dan $o$, worden alle operatoren van de stack op de uitkomst gezet,
+            \item dan zet $o$ op de stack.
+        \end{itemize}
+        \item Een linker haakje wordt op de stack geplaatst,
+        \item Bij een rechter haakje worden alle operatoren van de stack gehaald en op de uitkomst geplaatst tot een rechter haakje wordt gevonden. Beide haakjes worden daarna vergeten.
+        \item Als er niets meer is om te lezen maar de stack niet leeg, plaats de stack op de uitkomst.
+    \end{itemize}
+
+De complexiteit van dit alogartime is $O(n)$ afhankelijk van de lengte van de lengte van de input. Het algoritme hoeft per token maximaal een keer te lezen, een keer te schrijven op de uitput, een keer te schrijven op de stack en er van af te halen.
 \newpage
 \section{Implementatie}
-\subsection{Basiscode} %Arja
+\subsection{Basiscode}
 \subsection{De functionaliteiten van onze code}
 In dit deel zullen we de verschillende berekeningen die onze code kan uitvoeren uitleggen. Bij elke functionaliteit geven we ook een korte handleiding voor het gebruik hiervan.
+
+De basis van de code wordt gevormd door de class \texttt{Expression} en de subclasses die de verschillende knopen defineren. In Expressions staan methodes die voor alle expressies gedifineerd zijn, zoals het maken van een string en het checken van gelijkheid, en de methode \texttt{fromString} welke een string inleest en een expressie boom teruggeeft. 
+
+Alle knopen zijn subclasses van \texttt{Expression}, dus alle methode in deze hooft class werken om alle knopen. Hier in zijn ook optellen, vermenigvuldiging, logatrime, enzovoort gedefineerd omdat we alle soorten expressie willen optellen, vermenigvuldigen. Deze werken allemaal op de zelfde manier: als we expresie $a$ bij expresie $b$ willen optellen, wordt en een optellingsknoop aangemaakt met als linker en rechter kind $a$ en $b$. Bij uniare functies wordt maar een kind toe gevoegd. Voor constanten en variabelen worden anderen 
+
+\subsubsection{Het vertalen van een string naar een expression boom}
+De methode \texttt{fromString} zet een string om in een expressie boom waarop de rest van de methodes toe gepast kunnen worden. Dit vertalen gaan een drie stappen. De eerste is het omzetten van een string in een lijst met tokens. Dit gebeurd met de functie \texttt{tokenize}. De functie leest de gehele string en voor en na de operatoren $+,-,*,/$ en de linker en rechter haakjes staan worden spaties gezet. Tenslotte worden  gesplist op spaties en wordt er voor gezorget dat machtsverheven en negatiefe getallen juist worden gelezen.
 
 \subsubsection{Het vertalen van een expressie naar een string}
 Een expressie kan worden omgezet naar een string. Dit gebeurt in de methode \texttt{\_\_str\_\_} in de klasse \texttt{BinaryNode}. Het maken van de string gebeurt op een recursieve manier. Er wordt telkens de \texttt{str}-methode aangeroepen van het linker- en het rechterkind. Deze roepen op hun beurt weer de \texttt{str}-methode aan van hun kinderen, enz. Wanneer een kind een \texttt{Constant} of een \texttt{Variable} is, zorgen de \texttt{str}-methoden van die klassen ervoor dat de juiste waarde als string wordt teruggegeven. Op die manier wordt de gehele string opgebouwd. \\
@@ -196,6 +224,44 @@ De methode \texttt{\_\_eq\_\_} kan toegepast worden op twee bomen die gemaakt zi
 
 \textbf{Beperkingen}\\
 De code kan niet herkennen dat b.v. $-1+2$ en $2-1$ hetzelfde zijn. Dit zou lastig te implementeren zijn omdat je iets zou kunnen doen zoals: als \texttt{self.op\_symbol==’+’} en \texttt{other.op\_symbol==’-‘} (of andersom), kijk dan of de linkerkant van de ene boom gelijk is aan de negatie van de andere boom, en de rechterkant gelijk aan de linkerkant van de ander. Het probleem zit dan in de negatie. De negatie van een boom geeft $(-1)$ keer de oorspronkelijke boom, maar de code herkent de gelijkheid van $-1$ en $(-1)*1$ niet. Dit zou ge\"implementeerd kunnen worden, maar dit wordt ingewikkeld omdat 1 weer opgebouwd kan worden van bij voorbeeld $0+1$, dus moet ook de gelijkenis van $(-1)*(0+1)$ of nog grotere bomen herkend worden. Dit zou opgelost kunnen worden door een versimpeling hiervoor te implementeren.
+
+\subsubsection{Solve}
+De klasse \texttt{Expression} bevat een methode \texttt{solve} die het nulpunt zoekt van een expressie met een variabele. 
+Het is een klassiek vraagstuk in de wiskunde om het vinden van een nulpunt van een functie. Dit kan op twee manieren gedaan worden: algebraïsch en numeriek. Algebraïsch oplossen is voor computers ingewikkeld, hierbij komt vaak een complete trukendoos bij kijken en een intuïtie wanneer een bepaald hulpmiddel nuttige vorderingen oplevert. Een zeer geavanceerd programma zoals \textbf{Wolfram Mathematica} kan ook algebraïsch vergelijkingen oplossen. Numeriek oplossen van vergelijkingen is eenvoudiger te implementeren en er zijn veel variaties hierop. 
+
+De Newton-Raphson is een eenvoudig voorbeeld hiervan. Deze methode werkt voor veel continue differentieerbare functies. Stel $f$ is de functie waarvan het nulpunt bepaald moet worden en $f'$ zijn afgeleide. Er is een begin punt nodig vanwaar de functie opzoek aat naar het nulpunt, het punt $x_0$. Het is niet nodig dat dit punt in de buurt van het nulpunt ligt, maar het maakt de methode wel sneller als dat zo is. Dit is een iteratief proces waarbij een volgend nulpunt benaderd worden met de vorige op de volgende manier:
+    \begin{equation}
+        x_{k+1} = x_k + \frac{f(x_k)}{f'(x_k)}
+    \end{equation}
+Wanneer het verschil tussen $x_k$ kleiner is dan de tolerance stop het iteratief proces. 
+
+
+\textbf{Handleiding} \\
+De methode \texttt{solve} moet worden aangeroepen met een expressie en de variabele waarnaar de expressie moet worden opgelost, deze variabele moet als string worden ingevoerd.
+
+De methode heeft als standaardinstelling dat het het nulpunt van de expressie zoekt, door als tweede waarde een getal $a$ mee te geven zoekt het de een punt waar de expressie $a$ is, dit kan ook door \texttt{y = a} in te vullen.
+
+De methode begint de iteratie standaard met $x_0 = 0$. Een ander beginpunt $b$ kan worden opgegeven als \texttt{x0 = b}. Dit kan de mogelijkheid geven om toch nog een nulpunt te vinden als dit in eerste instantie niet gelukt is, of een ander nulpunt.
+
+Standaard stopt de methode als het verschil tussen $f(x_k)$ en $0$ of $a$ minder dan $10^{-5}$ is. Door \texttt{tolerance = \epsilon} aan de methode mee te geven veranderd de tolerantie naar $\epsilon$. 
+
+Als laatste is er de optie om het aantal iteraties te bepalen, standaard zijn dit er duizend. Door \texttt{n = N} mee te geven stop de functie na maximaal N iteraties. Ook kan \texttt{n = None}, dat is er geen bovengrens van iteraties en blijft de functie itereren tot de tolerantie bereikt is.
+
+Als de functie geen nulpunt kan vinden, geeft de methode een foutmelding waarin alle variabele worden gereprecenteerd.
+
+Hieronder twee voorbeelden \\\\
+\texttt{>>> f = Expression.fromString('2*x**3 + x', n = None)\\
+		>>> print(f.solve('x'))\\
+		.....}
+
+\texttt{>>> f = Expression.fromString('2*x**4 + x')\\
+		>>> print(f.solve('x', x_0 = 5, tolenance = 10**9))\\
+		.....}
+		
+\textbf{Beperkingen}\\
+De beperkingen van deze methode liggen in de beperkingen van de Newton methode: niet alle nulpunten van een functie kunnen gevonden worden omdat de methode daar niet stabiel is. Dit ligt aan de afgeleide van de functie in dit punt.
+
+Een verbetering kan zijn het toevoegen van meerdere algoritmes om nulpunten te vinden, zoals de bisectie methode die ook een nulpunt kan vinden als dat Newton onstabiel is door de afgeleide. Deze andere methodes hebben hun eigen nadelen.
 
 \subsubsection{Het numeriek uitrekenen van een expressie} 
 Als men de numerieke waarde van een expressie zou willen berekenen, ofwel een expressie 'evalueren', dan zou dat kunnen met de methode \texttt{evaluate} van de klasse \texttt{Expression}. Deze methode neemt als input een dictionary die waarden toekent aan de variabelen van de expressie. Als er geen variabelen in de expressieboom zitten, dan hoeft er geen input gegeven te worden en gaat de code er vanuit dat er een lege dictionary \texttt{\{\}} wordt meegegeven. Ook maakt de methode gebruik van de ingebouwde functionaliteit \texttt{eval} van Python, die ook als input een dictionary moet krijgen voor onbekende variabelen. De methode \texttt{evaluate} loopt de expressieboom af totdat hij bij een knoop van het type \texttt{Constant}, \texttt{Variables}, \texttt{LogNode}, \texttt{SinNode}, \texttt{CosNode} of \texttt{TanNode} komt. Bij zo'n knoop berekent hij eevoudig de numerieke waarde. Voor een  \texttt{Constant} of \texttt{Variables} knoop houdt dat in het invullen van de waarde (voor variabelen uit de bijgevoegde dicionary gehaald) in \texttt{eval}. Voor een \texttt{LogNode}, \texttt{SinNode}, \texttt{CosNode} of \texttt{TanNode} staat een aparte \texttt{evaluate} methode in zijn eigen klasse. Vervolgens voegt de code de uitkomsten samen voor alle \texttt{BinaryNode}s van onder naar boven met behulp van \texttt{eval}.\\
